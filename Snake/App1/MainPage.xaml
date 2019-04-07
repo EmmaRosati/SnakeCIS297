@@ -1,0 +1,16 @@
+﻿<Page
+    x:Class="App1.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App1"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Width="800"
+    Height="800">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <canvas:CanvasAnimatedControl x:Name="canvas" Draw="canvas_Draw" Update="canvas_Update" Height="2000" Width="2000" />
+    </Grid>
+</Page>

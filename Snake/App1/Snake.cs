@@ -97,9 +97,9 @@ namespace App1
             }
 
             //Update all the body segments
-            foreach (BodySegment bs in bodySegments)
+            for (int i = 0; i < bodySegments.Count; ++i)
             {
-                bs.update();
+                bodySegments[i].update();
             }
         }
             
@@ -110,15 +110,15 @@ namespace App1
             apple.draw(canvas);
 
             //Draw all the body segments
-            foreach (BodySegment bs in bodySegments)
+            for (int i = 0; i < bodySegments.Count; ++i)
             {
-                bs.draw(canvas);
+                bodySegments[i].draw(canvas);
             }
 
             //Draw all the covers
-            foreach (Cover c in covers)
+            for (int i = 0; i < covers.Count; ++i)
             {
-                c.draw(canvas);
+                covers[i].draw(canvas);
             }
         }
     }

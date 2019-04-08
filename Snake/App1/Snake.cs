@@ -12,6 +12,7 @@ namespace App1
 {
     enum direction { R, L, U, D};
 
+    //Blocks that the snake hits to grow
     class Apple
     {
         public int x;
@@ -20,6 +21,7 @@ namespace App1
 
         public Apple()
         {
+            //Give apple random x and y
             Random RNG = new Random();
             x = RNG.Next(20, 440);
             y = RNG.Next(20, 440);
@@ -28,6 +30,7 @@ namespace App1
 
         public bool collides(int hx, int hy, int hl)
         {
+            //Returns true if one of the four corners of the apple is inside of the snake head
             return ((x + l) >= hx && (x + l) <= (hx + hl)) && ((y + l) >= hy && (y + l) <= (hy + hl)) ||
                    ((x >= hx && x <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
                    (((x + l) >= hx && (x + l) <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
@@ -36,6 +39,7 @@ namespace App1
 
         public void draw(CanvasDrawingSession canvas)
         {
+            //Draw apple
             Rect rectForApple = new Rect();
             rectForApple.X = x;
             rectForApple.Y = y;
@@ -59,6 +63,8 @@ namespace App1
             apple = new Apple();
             bodySegments = new List<BodySegment>();
             covers = new List<Cover>();
+
+            //Initialize snake to have six body segments.
             bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l));
             bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l));
             bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l));
@@ -69,12 +75,17 @@ namespace App1
 
         public void updateGame()
         {
+            //Update snake
             snakeHead.update();
+
+            //If the snake head collides with the apple, start drawing a new apple
             while (apple.collides(snakeHead.x, snakeHead.y, snakeHead.l))
             {
                 apple = new Apple();
             }
 
+
+            //If a cover collides with the last body segment, stop drawing it.
             BodySegment lastBodySegment = bodySegments[bodySegments.Count() - 1];
             
             for (int i = 0; i < covers.Count; ++i)
@@ -85,6 +96,7 @@ namespace App1
                 }
             }
 
+            //Update all the body segments
             foreach (BodySegment bs in bodySegments)
             {
                 bs.update();
@@ -93,13 +105,17 @@ namespace App1
             
         public void drawGame(CanvasDrawingSession canvas)
         {
+            //Draw the snake head and apple
             snakeHead.draw(canvas);
             apple.draw(canvas);
+
+            //Draw all the body segments
             foreach (BodySegment bs in bodySegments)
             {
                 bs.draw(canvas);
             }
 
+            //Draw all the covers
             foreach (Cover c in covers)
             {
                 c.draw(canvas);
@@ -123,7 +139,11 @@ namespace App1
             x = 300;
             y = 300;
             l = 20;
+
+            //There's a reason this is 100. Don't change the value.
             distanceSinceLastTurn = 100;
+
+            //Start off by moving right
             goingUp = false;
             goingDown = false;
             goingRight = true;
@@ -157,6 +177,7 @@ namespace App1
 
         public void draw(CanvasDrawingSession canvas)
         {
+            //Draw snake head
             Rect rectForSnakeHead = new Rect();
             rectForSnakeHead.X = x;
             rectForSnakeHead.Y = y;
@@ -177,7 +198,10 @@ namespace App1
         public bool goingRight;
         public bool goingLeft;
 
+        //Keep track of distances that the body segment has to travel and then turn at
         public List<int> distancesTillTurns;
+
+        //Keep track of directions that body segment has to turn
         public Queue<direction> waysToTurn;
 
         public BodySegment(int sx, int sy, int sl)
@@ -215,17 +239,22 @@ namespace App1
                 x -= 4;
             }
 
+            //Don't go any further if the body segment is lined up with the head
             if (distancesTillTurns.Count() == 0)
             {
                 return;
             }
 
+            //Subtract 4 from distance body segment is currently traveling
             distancesTillTurns[0] -= 4;
 
+            //If it's time to turn
             if (distancesTillTurns[0] == 0)
             {
+                //Get rid of zero. Will start subtracting from next distance.
                 distancesTillTurns.Remove(0);
 
+                //Get direction body segment is turning.
                 direction newDirection = waysToTurn.Dequeue();
 
                 if (newDirection == direction.U)
@@ -264,6 +293,7 @@ namespace App1
 
         public void draw(CanvasDrawingSession canvas)
         {
+            //Draw body segment
             Rect rectForBodySegment = new Rect();
             rectForBodySegment.X = x;
             rectForBodySegment.Y = y;
@@ -289,6 +319,7 @@ namespace App1
 
         public void draw(CanvasDrawingSession canvas)
         {
+            //Draw cover
             Rect recForCover = new Rect();
             recForCover.X = X;
             recForCover.Y = Y;
@@ -300,6 +331,7 @@ namespace App1
 
         public bool collides (int x, int y)
         {
+            //Returns true is snake head is directly on top of cover
             return X == x && Y == y;
         }
     }

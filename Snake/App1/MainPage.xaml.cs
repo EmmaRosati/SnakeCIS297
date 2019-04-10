@@ -28,6 +28,44 @@ namespace App1
         //Game Object
         private Snake snake;
 
+        public void TestForErrors()
+        {
+            bool allRight = true;
+            bool allSameY = true;
+            int YCordOfSnakeHead = snake.snakeHead.y;
+
+            for (int i = 0; i < snake.bodySegments.Count; ++i)
+            {
+                if (snake.bodySegments[i].goingRight == false)
+                {
+                    allRight = false;
+                    break;
+                }
+            }
+
+            if (allRight)
+            {
+                if (snake.snakeHead.goingRight == false)
+                {
+                    allRight = false;
+                }
+            }
+
+            for (int i = 0; i < snake.bodySegments.Count; ++i)
+            {
+                if(snake.bodySegments[i].y != YCordOfSnakeHead)
+                {
+                    allSameY = false;
+                    break;
+                }
+            }
+
+            if (allRight && !allSameY)
+            {
+                throw new Exception("Aha!");
+            }
+        }
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -56,12 +94,16 @@ namespace App1
         private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
         {
             //Update Game
+            TestForErrors();
             snake.updateGame();
         }
 
         //Runs when key is pressed down.
         private void Canvas_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
+            //Set justTurned to true so that the snake doesn't become unaligned.
+            snake.snakeHead.Turning();
+
             //Left key is pressed when the user was not already going left or right
             if (e.VirtualKey == Windows.System.VirtualKey.Left && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft)
             {

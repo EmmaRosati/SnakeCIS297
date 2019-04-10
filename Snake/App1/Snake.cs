@@ -133,7 +133,6 @@ namespace App1
         public bool goingRight;
         public bool goingLeft;
         public int distanceSinceLastTurn;
-        private bool justTurned;
 
         public Head()
         {
@@ -149,20 +148,10 @@ namespace App1
             goingDown = false;
             goingRight = true;
             goingLeft = false;
-
-            //Game just started
-            justTurned = false;
-        }
-
-        public void Turning()
-        {
-            justTurned = true;
         }
 
         public void update()
         {
-            justTurned = false;
-
             if (goingUp)
             {
                 y -= 4;
@@ -183,13 +172,7 @@ namespace App1
                 x -= 4;
             }
 
-            //Make sure we didn't just turn. If the user hit at arrow key and the snake turned,
-            //then distanceSinceLastTurn is 0 and we want to keep it zero. This will keep the snake
-            //aligned.
-            if (!justTurned)
-            {
-                distanceSinceLastTurn += 4;
-            }
+            distanceSinceLastTurn += 4;
         }
 
         public void draw(CanvasDrawingSession canvas)

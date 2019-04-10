@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.System;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -27,42 +28,43 @@ namespace App1
     {
         //Game Object
         private Snake snake;
+        private Window mainWindow;
 
-        public void TestForErrors()
+        public void TestToMakeSureBodySegmentsAreGoingToRightSpot()
         {
-            bool allRight = true;
-            bool allSameY = true;
-            int YCordOfSnakeHead = snake.snakeHead.y;
-
-            for (int i = 0; i < snake.bodySegments.Count; ++i)
+            if (snake.covers.Count != 0 && snake.bodySegments[0].distancesTillTurns.Count != 0)
             {
-                if (snake.bodySegments[i].goingRight == false)
+                if (snake.bodySegments[0].goingUp)
                 {
-                    allRight = false;
-                    break;
+                    if (!((snake.bodySegments[0].y - snake.bodySegments[0].distancesTillTurns[0]) == snake.covers[0].Y))
+                    {
+                        throw new Exception("Snake is unaligned.");
+                    }
                 }
-            }
 
-            if (allRight)
-            {
-                if (snake.snakeHead.goingRight == false)
+                else if (snake.bodySegments[0].goingDown)
                 {
-                    allRight = false;
+                    if (!((snake.bodySegments[0].y + snake.bodySegments[0].distancesTillTurns[0]) == snake.covers[0].Y))
+                    {
+                        throw new Exception("Snake is unaligned.");
+                    }
                 }
-            }
 
-            for (int i = 0; i < snake.bodySegments.Count; ++i)
-            {
-                if(snake.bodySegments[i].y != YCordOfSnakeHead)
+                else if (snake.bodySegments[0].goingLeft)
                 {
-                    allSameY = false;
-                    break;
+                    if (!((snake.bodySegments[0].x - snake.bodySegments[0].distancesTillTurns[0]) == snake.covers[0].X))
+                    {
+                        throw new Exception("Snake is unaligned.");
+                    }
                 }
-            }
 
-            if (allRight && !allSameY)
-            {
-                throw new Exception("Aha!");
+                if (snake.bodySegments[0].goingRight)
+                {
+                    if (!((snake.bodySegments[0].x + snake.bodySegments[0].distancesTillTurns[0]) == snake.covers[0].X))
+                    {
+                        throw new Exception("Snake is unaligned.");
+                    }
+                }
             }
         }
 
@@ -70,9 +72,7 @@ namespace App1
         {
             this.InitializeComponent();
             snake = new Snake();
-
-            //Add method to keydown event
-            Window.Current.CoreWindow.KeyDown += Canvas_KeyDown;
+            mainWindow = Window.Current;
         }
 
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
@@ -89,23 +89,32 @@ namespace App1
 
             //Draw Game
             snake.drawGame(args.DrawingSession);
+
+            bool isLeftArrowPressed = mainWindow.CoreWindow.GetKeyState(VirtualKey.Left).HasFlag(CoreVirtualKeyStates.Down);
+            bool isRightArrowPressed = mainWindow.CoreWindow.GetKeyState(VirtualKey.Right).HasFlag(CoreVirtualKeyStates.Down);
+            bool isUpArrowPressed = mainWindow.CoreWindow.GetKeyState(VirtualKey.Up).HasFlag(CoreVirtualKeyStates.Down);
+            bool isDownArrowPressed = mainWindow.CoreWindow.GetKeyState(VirtualKey.Down).HasFlag(CoreVirtualKeyStates.Down);
         }
 
         private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
         {
             //Update Game
-            TestForErrors();
             snake.updateGame();
+            checkForKeyPress();
+            TestToMakeSureBodySegmentsAreGoingToRightSpot();
         }
 
-        //Runs when key is pressed down.
-        private void Canvas_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
+        private void checkForKeyPress()
         {
-            //Set justTurned to true so that the snake doesn't become unaligned.
-            snake.snakeHead.Turning();
+            var a = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().CoreWindow.Dispatcher;
+            a.
+
+            bool isRightArrowPressed = false;
+            bool isUpArrowPressed = false;
+            bool isDownArrowPressed = false;
 
             //Left key is pressed when the user was not already going left or right
-            if (e.VirtualKey == Windows.System.VirtualKey.Left && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft)
+            if (isLeftArrowPressed && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft)
             {
                 //Put a cover over turn
                 snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
@@ -144,7 +153,7 @@ namespace App1
             }
 
             //Right key is pressed when we are not going right or left
-            else if (e.VirtualKey == Windows.System.VirtualKey.Right && !snake.snakeHead.goingLeft && !snake.snakeHead.goingRight)
+            else if (isRightArrowPressed && !snake.snakeHead.goingLeft && !snake.snakeHead.goingRight)
             {
                 snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
 
@@ -176,7 +185,7 @@ namespace App1
             }
 
             //Down key is pressed when we are not going up or down
-            else if (e.VirtualKey == Windows.System.VirtualKey.Down && !snake.snakeHead.goingUp && !snake.snakeHead.goingDown)
+            else if (isDownArrowPressed && !snake.snakeHead.goingUp && !snake.snakeHead.goingDown)
             {
                 snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
 
@@ -208,7 +217,7 @@ namespace App1
             }
 
             //Up key is pressed when we are not going up or down
-            else if (e.VirtualKey == Windows.System.VirtualKey.Up && !snake.snakeHead.goingDown && !snake.snakeHead.goingUp)
+            else if (isUpArrowPressed && !snake.snakeHead.goingDown && !snake.snakeHead.goingUp)
             {
                 snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
 

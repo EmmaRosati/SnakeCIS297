@@ -23,9 +23,9 @@ namespace App1
         {
             //Give apple random x and y
             Random RNG = new Random();
-            x = RNG.Next(20, 440);
-            y = RNG.Next(20, 440);
-            l = 5;
+            x = RNG.Next(40, 760);
+            y = RNG.Next(40, 760);
+            l = 20;
         }
 
         public bool collides(int hx, int hy, int hl)
@@ -88,36 +88,13 @@ namespace App1
             //If a cover collides with the last body segment, stop drawing it.
             BodySegment lastBodySegment = bodySegments[bodySegments.Count() - 1];
 
-            try
+
+            for (int i = 0; i < covers.Count; ++i)
             {
-
-                for (int i = 0; i < covers.Count; ++i)
-                {
-                    if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
-                    {
-                        covers.RemoveAt(i);
-                    }
-                }
-
-
-            }
-
-            catch (NullReferenceException e)
-            {
-                if (covers == null)
-                {
-                    throw new Exception("covers is null");
-                }
-
-                else if (covers[0] == null)
-                {
-                    throw new Exception("covers[0] is null");
-                }
-
-                else if (lastBodySegment == null)
-                {
-                    throw new Exception("lastBodySegment is null");
-                }
+                 if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
+                 {
+                     covers.RemoveAt(i);
+                 }
             }
 
             //Update all the body segments
@@ -139,26 +116,10 @@ namespace App1
                 bodySegments[i].draw(canvas);
             }
 
-            try
+            //Draw all the covers
+            for (int i = 0; i < covers.Count; ++i)
             {
-                //Draw all the covers
-                for (int i = 0; i < covers.Count; ++i)
-                {
-                    covers[i].draw(canvas);
-                }
-            }
-            
-            catch (NullReferenceException e)
-            {
-                if (covers == null)
-                {
-                    throw new Exception("covers is null");
-                }
-
-                else if (covers[0] == null)
-                {
-                    throw new Exception("covers[0] is null");
-                }
+                covers[i].draw(canvas);
             }
         }
     }
@@ -178,10 +139,10 @@ namespace App1
         {
             x = 300;
             y = 300;
-            l = 5;
+            l = 20;
 
-            //There's a reason this is 100. Don't change the value.
-            distanceSinceLastTurn = 30;
+            //There's a reason this is 120. Don't change the value.
+            distanceSinceLastTurn = 120;
 
             //Start off by moving right
             goingUp = false;
@@ -194,25 +155,25 @@ namespace App1
         {
             if (goingUp)
             {
-                y -= 5;
+                y -= 4;
             }
 
             else if(goingDown)
             {
-                y += 5;
+                y += 4;
             }
 
             else if (goingRight)
             {
-                x += 5;
+                x += 4;
             }
 
             else if (goingLeft)
             {
-                x -= 5;
+                x -= 4;
             }
 
-            distanceSinceLastTurn += 5;
+            distanceSinceLastTurn += 4;
         }
 
         public void draw(CanvasDrawingSession canvas)
@@ -261,22 +222,22 @@ namespace App1
         {
             if (goingUp)
             {
-                y -= 5;
+                y -= 4;
             }
 
             else if (goingDown)
             {
-                y += 5;
+                y += 4;
             }
 
             else if (goingRight)
             {
-                x += 5;
+                x += 4;
             }
 
             else if (goingLeft)
             {
-                x -= 5;
+                x -= 4;
             }
 
             //Don't go any further if the body segment is lined up with the head
@@ -286,7 +247,7 @@ namespace App1
             }
 
             //Subtract 4 from distance body segment is currently traveling
-            distancesTillTurns[0] -= 5;
+            distancesTillTurns[0] -= 4;
 
             //If it's time to turn
             if (distancesTillTurns[0] == 0)

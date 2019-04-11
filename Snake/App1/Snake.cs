@@ -25,7 +25,7 @@ namespace App1
             Random RNG = new Random();
             x = RNG.Next(20, 440);
             y = RNG.Next(20, 440);
-            l = 20;
+            l = 5;
         }
 
         public bool collides(int hx, int hy, int hl)
@@ -87,12 +87,36 @@ namespace App1
 
             //If a cover collides with the last body segment, stop drawing it.
             BodySegment lastBodySegment = bodySegments[bodySegments.Count() - 1];
-            
-            for (int i = 0; i < covers.Count; ++i)
+
+            try
             {
-                if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
+
+                for (int i = 0; i < covers.Count; ++i)
                 {
-                    covers.RemoveAt(i);
+                    if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
+                    {
+                        covers.RemoveAt(i);
+                    }
+                }
+
+
+            }
+
+            catch (NullReferenceException e)
+            {
+                if (covers == null)
+                {
+                    throw new Exception("covers is null");
+                }
+
+                else if (covers[0] == null)
+                {
+                    throw new Exception("covers[0] is null");
+                }
+
+                else if (lastBodySegment == null)
+                {
+                    throw new Exception("lastBodySegment is null");
                 }
             }
 
@@ -115,10 +139,26 @@ namespace App1
                 bodySegments[i].draw(canvas);
             }
 
-            //Draw all the covers
-            for (int i = 0; i < covers.Count; ++i)
+            try
             {
-                covers[i].draw(canvas);
+                //Draw all the covers
+                for (int i = 0; i < covers.Count; ++i)
+                {
+                    covers[i].draw(canvas);
+                }
+            }
+            
+            catch (NullReferenceException e)
+            {
+                if (covers == null)
+                {
+                    throw new Exception("covers is null");
+                }
+
+                else if (covers[0] == null)
+                {
+                    throw new Exception("covers[0] is null");
+                }
             }
         }
     }
@@ -133,63 +173,46 @@ namespace App1
         public bool goingRight;
         public bool goingLeft;
         public int distanceSinceLastTurn;
-        private bool justTurned;
 
         public Head()
         {
             x = 300;
             y = 300;
-            l = 20;
+            l = 5;
 
             //There's a reason this is 100. Don't change the value.
-            distanceSinceLastTurn = 100;
+            distanceSinceLastTurn = 30;
 
             //Start off by moving right
             goingUp = false;
             goingDown = false;
             goingRight = true;
             goingLeft = false;
-
-            //Game just started
-            justTurned = false;
-        }
-
-        public void Turning()
-        {
-            justTurned = true;
         }
 
         public void update()
         {
-            justTurned = false;
-
             if (goingUp)
             {
-                y -= 4;
+                y -= 5;
             }
 
             else if(goingDown)
             {
-                y += 4;
+                y += 5;
             }
 
             else if (goingRight)
             {
-                x += 4;
+                x += 5;
             }
 
             else if (goingLeft)
             {
-                x -= 4;
+                x -= 5;
             }
 
-            //Make sure we didn't just turn. If the user hit at arrow key and the snake turned,
-            //then distanceSinceLastTurn is 0 and we want to keep it zero. This will keep the snake
-            //aligned.
-            if (!justTurned)
-            {
-                distanceSinceLastTurn += 4;
-            }
+            distanceSinceLastTurn += 5;
         }
 
         public void draw(CanvasDrawingSession canvas)
@@ -238,22 +261,22 @@ namespace App1
         {
             if (goingUp)
             {
-                y -= 4;
+                y -= 5;
             }
 
             else if (goingDown)
             {
-                y += 4;
+                y += 5;
             }
 
             else if (goingRight)
             {
-                x += 4;
+                x += 5;
             }
 
             else if (goingLeft)
             {
-                x -= 4;
+                x -= 5;
             }
 
             //Don't go any further if the body segment is lined up with the head
@@ -263,7 +286,7 @@ namespace App1
             }
 
             //Subtract 4 from distance body segment is currently traveling
-            distancesTillTurns[0] -= 4;
+            distancesTillTurns[0] -= 5;
 
             //If it's time to turn
             if (distancesTillTurns[0] == 0)

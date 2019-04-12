@@ -73,6 +73,22 @@ namespace App1
             bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l));
         }
 
+        public void resetGame()
+        {
+            snakeHead = new Head();
+            apple = new Apple();
+            bodySegments = new List<BodySegment>();
+            covers = new List<Cover>();
+
+            //Initialize snake to have six body segments.
+            bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l));
+            bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l));
+            bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l));
+            bodySegments.Add(new BodySegment(snakeHead.x - (4 * snakeHead.l), snakeHead.y, snakeHead.l));
+            bodySegments.Add(new BodySegment(snakeHead.x - (5 * snakeHead.l), snakeHead.y, snakeHead.l));
+            bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l));
+        }
+
         public void updateGame()
         {
             //Update snake

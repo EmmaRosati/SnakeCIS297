@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.ViewManagement;
+using Microsoft.Graphics.Canvas.Text;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -24,17 +25,22 @@ namespace App1
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class Game : Page
     {
         //Game Object
         private Snake snake;
+
+        private int gameOverCounter;
+
         private bool cantChangeDirection;
         private bool turningLeft;
         private bool turningRight;
         private bool turningDown;
         private bool turningUp;
+        private bool gameOver;
+        private bool gameIsRunning;
 
-        public MainPage()
+        public Game()
         {
             this.InitializeComponent();
             snake = new Snake();
@@ -46,6 +52,10 @@ namespace App1
             turningRight = false;
             turningDown = false;
             turningUp = false;
+            gameOver = false;
+            gameIsRunning = true; //make false later
+
+            gameOverCounter = 0;
 
             //Set width and height of window
             ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
@@ -64,11 +74,52 @@ namespace App1
             args.DrawingSession.DrawRectangle(rect, Colors.Black);
             args.DrawingSession.FillRectangle(rect, Colors.Black);
 
-            //Draw Game
-            snake.drawGame(args.DrawingSession);
+            if (gameIsRunning)
+            {
+                //Draw Game
+                snake.drawGame(args.DrawingSession);
+            }          
+
+            else if (gameOver)
+            {
+                Rect locOfGameOverText = new Rect();
+                locOfGameOverText.X = 200;
+                locOfGameOverText.Y = 300;
+                locOfGameOverText.Width = 400;
+                locOfGameOverText.Height = 200;
+
+                CanvasTextFormat textFormatOfGameOverText = new CanvasTextFormat()
+                {
+                    FontFamily = "Arial Black",
+                    FontSize = 72
+                };
+
+                args.DrawingSession.DrawText("Game Over", locOfGameOverText, Colors.White, textFormatOfGameOverText);
+            }
         }
 
         private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
+        {
+           if(gameIsRunning)
+           {
+               updateGame();
+           }
+
+           else if (gameOver)
+           {
+                ++gameOverCounter;
+
+                if (gameOverCounter == 360)
+                {
+                    gameOver = false;
+                    snake.resetGame();
+                    gameIsRunning = true;
+                    gameOverCounter = 0;
+                }   
+           }
+        }
+
+        private void updateGame()
         {
             snake.updateGame();
 
@@ -208,13 +259,21 @@ namespace App1
                 snake.snakeHead.distanceSinceLastTurn = 0;
                 turningUp = false;
             }
+
+            //game ends if snake hits edge of window
+            if (snake.snakeHead.x == 0 || snake.snakeHead.x == 780 ||
+                snake.snakeHead.y == 0 || snake.snakeHead.y == 780)
+            {
+                gameOver = true;
+                gameIsRunning = false;
+            }
         }
 
         //Runs when key is pressed down.
         private void Canvas_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
             //Left key is pressed when the user was not already going left or right
-            if (e.VirtualKey == Windows.System.VirtualKey.Left && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft && !cantChangeDirection)
+            if (e.VirtualKey == Windows.System.VirtualKey.Left && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft && !cantChangeDirection && gameIsRunning)
             {
                 cantChangeDirection = true;
                 turningLeft = true;
@@ -222,7 +281,7 @@ namespace App1
             }
 
             //Right key is pressed when we are not going right or left
-            else if (e.VirtualKey == Windows.System.VirtualKey.Right && !snake.snakeHead.goingLeft && !snake.snakeHead.goingRight && !cantChangeDirection)
+            else if (e.VirtualKey == Windows.System.VirtualKey.Right && !snake.snakeHead.goingLeft && !snake.snakeHead.goingRight && !cantChangeDirection && gameIsRunning)
             {
                 cantChangeDirection = true;
                 turningRight = true;
@@ -230,7 +289,7 @@ namespace App1
             }
 
             //Down key is pressed when we are not going up or down
-            else if (e.VirtualKey == Windows.System.VirtualKey.Down && !snake.snakeHead.goingUp && !snake.snakeHead.goingDown && !cantChangeDirection)
+            else if (e.VirtualKey == Windows.System.VirtualKey.Down && !snake.snakeHead.goingUp && !snake.snakeHead.goingDown && !cantChangeDirection && gameIsRunning)
             {
                 cantChangeDirection = true;
                 turningDown = true;
@@ -238,7 +297,7 @@ namespace App1
             }
 
             //Up key is pressed when we are not going up or down
-            else if (e.VirtualKey == Windows.System.VirtualKey.Up && !snake.snakeHead.goingDown && !snake.snakeHead.goingUp && !cantChangeDirection)
+            else if (e.VirtualKey == Windows.System.VirtualKey.Up && !snake.snakeHead.goingDown && !snake.snakeHead.goingUp && !cantChangeDirection && gameIsRunning)
             {
                 cantChangeDirection = true;
                 turningUp = true;

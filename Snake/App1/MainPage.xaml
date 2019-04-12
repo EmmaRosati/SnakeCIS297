@@ -11,6 +11,6 @@
     Height="800">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <canvas:CanvasAnimatedControl x:Name="canvas" Draw="canvas_Draw" Update="canvas_Update" Height="2000" Width="2000" />
+        <canvas:CanvasAnimatedControl x:Name="canvas" Draw="canvas_Draw" Update="canvas_Update" Height="800" Width="800" />
     </Grid>
 </Page>

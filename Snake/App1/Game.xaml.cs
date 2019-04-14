@@ -98,7 +98,7 @@ namespace App1
             }
         }
 
-        private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
+        private async void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
         {
            if(gameIsRunning)
            {
@@ -109,13 +109,26 @@ namespace App1
            {
                 ++gameOverCounter;
 
+                if (gameOverCounter == 1)
+                {
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    {
+                        var element = new MediaElement();
+                        var folder = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync("Assets");
+                        var file = await folder.GetFileAsync("sm64_mario_game_over.wav");
+                        var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                        element.SetSource(stream, "");
+                        element.Play();
+                    });
+                }
+
                 if (gameOverCounter == 360)
                 {
                     gameOver = false;
                     snake.resetGame();
                     gameIsRunning = true;
                     gameOverCounter = 0;
-                }   
+                }
            }
         }
 

@@ -26,8 +26,8 @@ namespace App1
         {
             //Give apple random x and y
             Random RNG = new Random();
-            x = RNG.Next(40, 760);
-            y = RNG.Next(40, 760);
+            x = RNG.Next(40, 560);
+            y = RNG.Next(40, 560);
             l = 20;
             appleColor = color;
         }

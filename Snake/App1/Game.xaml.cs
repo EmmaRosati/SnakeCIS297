@@ -58,7 +58,7 @@ namespace App1
             gameOverCounter = 0;
 
             //Set width and height of window
-            ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
+            ApplicationView.PreferredLaunchViewSize = new Size(600, 600);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 
@@ -83,8 +83,8 @@ namespace App1
             else if (gameOver)
             {
                 Rect locOfGameOverText = new Rect();
-                locOfGameOverText.X = 200;
-                locOfGameOverText.Y = 300;
+                locOfGameOverText.X = 100;
+                locOfGameOverText.Y = 200;
                 locOfGameOverText.Width = 400;
                 locOfGameOverText.Height = 200;
 
@@ -299,8 +299,8 @@ namespace App1
                 }
 
                 //Game ends if snake hits edge of window
-                if (snake.snakeHead.x == 0 || snake.snakeHead.x == 780 ||
-                    snake.snakeHead.y == 0 || snake.snakeHead.y == 780)
+                if (snake.snakeHead.x == 0 || snake.snakeHead.x == 580 ||
+                    snake.snakeHead.y == 0 || snake.snakeHead.y == 580)
                 {
                     gameOver = true;
                     gameIsRunning = false;

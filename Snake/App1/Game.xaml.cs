@@ -43,7 +43,7 @@ namespace App1
         public Game()
         {
             this.InitializeComponent();
-            snake = new Snake();
+            snake = new Snake(Colors.White, Colors.Black);
 
             //Add method to keydown event
             Window.Current.CoreWindow.KeyDown += Canvas_KeyDown;
@@ -71,8 +71,8 @@ namespace App1
             rect.Width = 800;
             rect.Height = 800;
 
-            args.DrawingSession.DrawRectangle(rect, Colors.Black);
-            args.DrawingSession.FillRectangle(rect, Colors.Black);
+            args.DrawingSession.DrawRectangle(rect, snake.backgroundColor);
+            args.DrawingSession.FillRectangle(rect, snake.backgroundColor);
 
             if (gameIsRunning)
             {
@@ -94,7 +94,7 @@ namespace App1
                     FontSize = 72
                 };
 
-                args.DrawingSession.DrawText("Game Over", locOfGameOverText, Colors.White, textFormatOfGameOverText);
+                args.DrawingSession.DrawText("Game Over", locOfGameOverText, snake.foregroundColor, textFormatOfGameOverText);
             }
         }
 
@@ -132,153 +132,179 @@ namespace App1
            }
         }
 
-        private void updateGame()
+        private async void updateGame()
         {
             snake.updateGame();
 
-            if (turningLeft)
-            {
-                //Put a cover over turn
-                snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
-
-                //Change direction
-                snake.snakeHead.goingLeft = true;
-                snake.snakeHead.goingRight = false;
-                snake.snakeHead.goingDown = false;
-                snake.snakeHead.goingUp = false;
-
-                int bodySegmentNumber = 1;
-
-                //Number of blocks lined up with snake head when it turns
-                int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
-
-                //Calcuate how far each body segment should travel and which direction it should go
-                //When it gets there
-                for (int i = 0; i < snake.bodySegments.Count; ++i)
+            if (gameIsRunning)
+            {   
+                //Horrible separation but updateGame method for snake class cannot be async or game breaks.
+                if (snake.growSnake)
                 {
-                    if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                     {
-                        snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.L);
-                        ++bodySegmentNumber;
-                    }
+                        var element = new MediaElement();
+                        var folder = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync("Assets");
+                        var file = await folder.GetFileAsync("bite_sound_effect.wav");
+                        var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                        element.SetSource(stream, "");
+                        element.Play();
+                    });
 
-                    else
-                    {
-                        snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.L);
-                    }
+                    snake.growSnake = false;
                 }
 
-                //Reset distanceSinceLastTurn since we just turned
-                snake.snakeHead.distanceSinceLastTurn = 0;
-
-
-                turningLeft = false;
-            }
-
-            else if (turningRight)
-            {
-                snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
-
-                snake.snakeHead.goingLeft = false;
-                snake.snakeHead.goingRight = true;
-                snake.snakeHead.goingDown = false;
-                snake.snakeHead.goingUp = false;
-
-                int bodySegmentNumber = 1;
-                int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
-
-                for (int i = 0; i < snake.bodySegments.Count; ++i)
+                if (turningLeft)
                 {
-                    if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                    //Put a cover over turn
+                    snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l, snake.foregroundColor));
+
+                    //Change direction
+                    snake.snakeHead.goingLeft = true;
+                    snake.snakeHead.goingRight = false;
+                    snake.snakeHead.goingDown = false;
+                    snake.snakeHead.goingUp = false;
+
+                    int bodySegmentNumber = 1;
+
+                    //Number of blocks lined up with snake head when it turns
+                    int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
+
+                    //Calcuate how far each body segment should travel and which direction it should go
+                    //When it gets there
+                    for (int i = 0; i < snake.bodySegments.Count; ++i)
                     {
-                        snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.R);
-                        ++bodySegmentNumber;
+                        if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.L);
+                            ++bodySegmentNumber;
+                        }
+
+                        else
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.L);
+                        }
                     }
 
-                    else
-                    {
-                        snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.R);
-                    }
+                    //Reset distanceSinceLastTurn since we just turned
+                    snake.snakeHead.distanceSinceLastTurn = 0;
+
+
+                    turningLeft = false;
                 }
 
-                snake.snakeHead.distanceSinceLastTurn = 0;
-                turningRight = false;
-            }
-
-            else if (turningDown)
-            {
-                snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
-
-                snake.snakeHead.goingLeft = false;
-                snake.snakeHead.goingRight = false;
-                snake.snakeHead.goingDown = true;
-                snake.snakeHead.goingUp = false;
-
-                int bodySegmentNumber = 1;
-                int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
-
-                for (int i = 0; i < snake.bodySegments.Count; ++i)
+                else if (turningRight)
                 {
-                    if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                    snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l, snake.foregroundColor));
+
+                    snake.snakeHead.goingLeft = false;
+                    snake.snakeHead.goingRight = true;
+                    snake.snakeHead.goingDown = false;
+                    snake.snakeHead.goingUp = false;
+
+                    int bodySegmentNumber = 1;
+                    int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
+
+                    for (int i = 0; i < snake.bodySegments.Count; ++i)
                     {
-                        snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.D);
-                        ++bodySegmentNumber;
+                        if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.R);
+                            ++bodySegmentNumber;
+                        }
+
+                        else
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.R);
+                        }
                     }
 
-                    else
-                    {
-                        snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.D);
-                    }
+                    snake.snakeHead.distanceSinceLastTurn = 0;
+                    turningRight = false;
                 }
 
-                snake.snakeHead.distanceSinceLastTurn = 0;
-                turningDown = false;
-            }
-
-            else if (turningUp)
-            {
-                snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l));
-
-                snake.snakeHead.goingLeft = false;
-                snake.snakeHead.goingRight = false;
-                snake.snakeHead.goingDown = false;
-                snake.snakeHead.goingUp = true;
-
-                int bodySegmentNumber = 1;
-                int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
-
-                for (int i = 0; i < snake.bodySegments.Count; ++i)
+                else if (turningDown)
                 {
-                    if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                    snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l, snake.foregroundColor));
+
+                    snake.snakeHead.goingLeft = false;
+                    snake.snakeHead.goingRight = false;
+                    snake.snakeHead.goingDown = true;
+                    snake.snakeHead.goingUp = false;
+
+                    int bodySegmentNumber = 1;
+                    int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
+
+                    for (int i = 0; i < snake.bodySegments.Count; ++i)
                     {
-                        snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.U);
-                        ++bodySegmentNumber;
+                        if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.D);
+                            ++bodySegmentNumber;
+                        }
+
+                        else
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.D);
+                        }
                     }
 
-                    else
-                    {
-                        snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
-                        snake.bodySegments[i].waysToTurn.Enqueue(direction.U);
-                    }
+                    snake.snakeHead.distanceSinceLastTurn = 0;
+                    turningDown = false;
                 }
 
-                snake.snakeHead.distanceSinceLastTurn = 0;
-                turningUp = false;
-            }
+                else if (turningUp)
+                {
+                    snake.covers.Add(new Cover(snake.snakeHead.x, snake.snakeHead.y, snake.snakeHead.l, snake.foregroundColor));
 
-            //game ends if snake hits edge of window
-            if (snake.snakeHead.x == 0 || snake.snakeHead.x == 780 ||
-                snake.snakeHead.y == 0 || snake.snakeHead.y == 780)
-            {
-                gameOver = true;
-                gameIsRunning = false;
+                    snake.snakeHead.goingLeft = false;
+                    snake.snakeHead.goingRight = false;
+                    snake.snakeHead.goingDown = false;
+                    snake.snakeHead.goingUp = true;
+
+                    int bodySegmentNumber = 1;
+                    int numberOfBlocksInLineWithHead = snake.snakeHead.distanceSinceLastTurn / 20;
+
+                    for (int i = 0; i < snake.bodySegments.Count; ++i)
+                    {
+                        if (bodySegmentNumber <= numberOfBlocksInLineWithHead)
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(bodySegmentNumber * 20);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.U);
+                            ++bodySegmentNumber;
+                        }
+
+                        else
+                        {
+                            snake.bodySegments[i].distancesTillTurns.Add(snake.snakeHead.distanceSinceLastTurn);
+                            snake.bodySegments[i].waysToTurn.Enqueue(direction.U);
+                        }
+                    }
+
+                    snake.snakeHead.distanceSinceLastTurn = 0;
+                    turningUp = false;
+                }
+
+                //Game ends if player hits themself
+                if (snake.playerRanIntoThemself())
+                {
+                    gameOver = true;
+                    gameIsRunning = false;
+                }
+
+                //Game ends if snake hits edge of window
+                if (snake.snakeHead.x == 0 || snake.snakeHead.x == 780 ||
+                    snake.snakeHead.y == 0 || snake.snakeHead.y == 780)
+                {
+                    gameOver = true;
+                    gameIsRunning = false;
+                }
             }
         }
 

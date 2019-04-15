@@ -108,6 +108,7 @@
     <None Include="App1_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\bite_sound_effect.wav" />
     <Content Include="Assets\sm64_mario_game_over.wav" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

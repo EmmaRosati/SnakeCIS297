@@ -6,6 +6,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
@@ -63,6 +65,7 @@ namespace App1
         public Color foregroundColor;
         public Color backgroundColor;
         public bool growSnake;
+        private MediaPlayer biteSoundEffect; 
 
         public Snake(Color foregroundColor, Color backgroundColor)
         {
@@ -73,6 +76,11 @@ namespace App1
             this.foregroundColor = foregroundColor;
             this.backgroundColor = backgroundColor;
             growSnake = false;
+
+            //Set up bite sound effect
+            biteSoundEffect = new MediaPlayer();
+            biteSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/chomp_sound_effect.wav"));
+
 
             //Initialize snake to have six body segments.
             bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
@@ -114,7 +122,9 @@ namespace App1
             //Snake grows if player just hit an apple
             if (growSnake)
             {
+                biteSoundEffect.Play();
                 lengthenSnake();
+                growSnake = false;
             }
 
 

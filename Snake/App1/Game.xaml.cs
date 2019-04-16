@@ -17,6 +17,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.ViewManagement;
 using Microsoft.Graphics.Canvas.Text;
+using Windows.Media.Playback;
+using Windows.Media.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -29,6 +31,8 @@ namespace App1
     {
         //Game Object
         private Snake snake;
+        private MediaPlayer backgroundMusicPlayer;
+        private MediaPlayer gameoverSoundEffect;
 
         private int gameOverCounter;
         private int turnCounter;
@@ -64,6 +68,23 @@ namespace App1
             //Set width and height of window
             ApplicationView.PreferredLaunchViewSize = new Size(600, 600);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+
+            //Start background music
+            backgroundMusicPlayer = new MediaPlayer();
+            backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
+            backgroundMusicPlayer.Volume = 0.06;
+            backgroundMusicPlayer.MediaEnded += resetSong;
+            backgroundMusicPlayer.Play();
+
+            //Gameover sound effect
+            gameoverSoundEffect = new MediaPlayer();
+            gameoverSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_game_over.wav"));
+        }
+
+        private void resetSong(MediaPlayer sender, object args)
+        {
+            backgroundMusicPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+            backgroundMusicPlayer.Play();
         }
 
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
@@ -102,7 +123,7 @@ namespace App1
             }
         }
 
-        private async void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
+        private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
         {
            if(gameIsRunning)
            {
@@ -126,15 +147,7 @@ namespace App1
 
                 if (gameOverCounter == 1)
                 {
-                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-                    {
-                        var element = new MediaElement();
-                        var folder = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync("Assets");
-                        var file = await folder.GetFileAsync("sm64_mario_game_over.wav");
-                        var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                        element.SetSource(stream, "");
-                        element.Play();
-                    });
+                    gameoverSoundEffect.Play();
                 }
 
                 if (gameOverCounter == 360)
@@ -150,22 +163,6 @@ namespace App1
         private async void updateGame()
         {
             snake.updateGame();
-
-            //Horrible separation but updateGame method for snake class cannot be async or game breaks.
-            if (snake.growSnake)
-            {
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-                {
-                    var element = new MediaElement();
-                    var folder = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync("Assets");
-                    var file = await folder.GetFileAsync("bite_sound_effect.wav");
-                    var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                    element.SetSource(stream, "");
-                    element.Play();
-                });
-
-                    snake.growSnake = false;
-            }
 
             if (turningLeft)
             {

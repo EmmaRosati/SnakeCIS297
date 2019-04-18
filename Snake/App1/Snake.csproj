@@ -111,6 +111,7 @@
     <Content Include="Assets\chomp_sound_effect.wav" />
     <Content Include="Assets\duck_tales_music.wav" />
     <Content Include="Assets\sm64_mario_game_over.wav" />
+    <Content Include="Assets\sm64_mario_thank_you.wav" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

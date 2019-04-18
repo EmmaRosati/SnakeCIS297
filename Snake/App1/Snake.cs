@@ -6,15 +6,18 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Gaming.Input;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Shapes;
 
 namespace App1
 {
     enum direction { R, L, U, D};
+    public enum startPageSelection { Play, Settings, HowToPlay, Credits };
 
     //Blocks that the snake hits to grow
     class Apple
@@ -65,7 +68,9 @@ namespace App1
         public Color foregroundColor;
         public Color backgroundColor;
         public bool growSnake;
-        private MediaPlayer biteSoundEffect; 
+        private MediaPlayer biteSoundEffect;
+        private Gamepad controller;
+        public int playerScore;
 
         public Snake(Color foregroundColor, Color backgroundColor)
         {
@@ -76,6 +81,7 @@ namespace App1
             this.foregroundColor = foregroundColor;
             this.backgroundColor = backgroundColor;
             growSnake = false;
+            playerScore = 0;
 
             //Set up bite sound effect
             biteSoundEffect = new MediaPlayer();
@@ -97,6 +103,7 @@ namespace App1
             apple = new Apple(foregroundColor);
             bodySegments = new List<BodySegment>();
             covers = new List<Cover>();
+            playerScore = 0;
 
             //Initialize snake to have six body segments.
             bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
@@ -112,11 +119,14 @@ namespace App1
             //Update snake
             snakeHead.update();
 
-            //When the snake head collides with an apple
-            while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake())
+            if (appleCollidesWithSnakeHead())
             {
-                apple = new Apple(foregroundColor);
-                growSnake = true;
+                //When the snake head collides with an apple
+                while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+                {
+                    apple = new Apple(foregroundColor);
+                    growSnake = true;
+                }
             }
 
             //Snake grows if player just hit an apple
@@ -125,6 +135,7 @@ namespace App1
                 biteSoundEffect.Play();
                 lengthenSnake();
                 growSnake = false;
+                ++playerScore;
             }
 
 
@@ -183,6 +194,13 @@ namespace App1
         private bool appleCollidesWithSnakeHead()
         {
             return apple.collides(snakeHead.x, snakeHead.y, snakeHead.l);
+        }
+
+        //Stop apple from spawing too close to snake head. This ensures sound effect plays correctly.
+        //Simple use of pythagerean theorem.
+        private bool appleIsToCloseToSnakeHead()
+        {
+            return ((Math.Pow((apple.x - snakeHead.x), 2.0) + Math.Pow((apple.y - snakeHead.y), 2.0)) < 14400);
         }
 
         private void lengthenSnake()
@@ -539,6 +557,64 @@ namespace App1
         {
             //Returns true is snake head is directly on top of cover
             return X == x && Y == y;
+        }
+    }
+
+    public class menuSelector
+    {
+        private bool atTop;
+        private bool atBottom;
+        private Rect selector;
+        public startPageSelection selection;
+
+        public menuSelector()
+        {
+            atTop = true;
+            atBottom = false;
+
+            selector = new Rect();
+            selector.X = 160;
+            selector.Y = 210;
+            selector.Height = 20;
+            selector.Width = 20;
+
+            selection = startPageSelection.Play;
+        }
+
+        public void moveUp()
+        {
+            if (!atTop)
+            {
+                selector.Y -= 50;
+                atBottom = false;
+                --selection;
+
+                if (selector.Y == 210)
+                {
+                    atTop = true;
+                }
+            }
+        }
+
+        public void moveDown()
+        {
+            if (!atBottom)
+            {
+                selector.Y += 50;
+                atTop = false;
+                ++selection;
+
+                if (selector.Y == 360)
+                {
+                    atBottom = true;
+                }
+            }
+        }
+
+        public void draw(CanvasDrawingSession canvas)
+        {
+            canvas.DrawRectangle(selector, Colors.White);
+            canvas.FillRectangle(selector, Colors.White);
         }
     }
 }

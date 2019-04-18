@@ -19,6 +19,7 @@ using Windows.UI.ViewManagement;
 using Microsoft.Graphics.Canvas.Text;
 using Windows.Media.Playback;
 using Windows.Media.Core;
+using Windows.Gaming.Input;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -29,13 +30,20 @@ namespace App1
     /// </summary>
     public sealed partial class Game : Page
     {
-        //Game Object
         private Snake snake;
+
         private MediaPlayer backgroundMusicPlayer;
         private MediaPlayer gameoverSoundEffect;
+        private MediaPlayer thankYouSoundEffect;
+
+        private Gamepad controller;
+
+        menuSelector menuSelector;
 
         private int gameOverCounter;
         private int turnCounter;
+        private int loadCounter;
+        private int thankYouSoundEffectCounter;
 
         private bool cantChangeDirection;
         private bool turningLeft;
@@ -45,28 +53,41 @@ namespace App1
         private bool gameOver;
         private bool gameIsRunning;
         private bool canTurn;
+        private bool startPageDisplaying;
+        private bool settingsPageDisplaying;
+        private bool howToPlayDisplaying;
+        private bool highScoreMenu;
+        private bool loading;
+        private bool credits;
 
         public Game()
         {
             this.InitializeComponent();
-            snake = new Snake(Colors.White, Colors.Black);
+            snake = new Snake(Colors.DarkOrange, Colors.Black);
 
             //Add method to keydown event
             Window.Current.CoreWindow.KeyDown += Canvas_KeyDown;
-            cantChangeDirection = false;
+            cantChangeDirection = false; //prevents key down event from firing off twice
             turningLeft = false;
             turningRight = false;
             turningDown = false;
             turningUp = false;
             gameOver = false;
-            gameIsRunning = true; //make false later
-            canTurn = true;
+            gameIsRunning = false;
+            canTurn = true; //Serves different purpose than cantChangeDirection
+            startPageDisplaying = false;
+            settingsPageDisplaying = false;
+            howToPlayDisplaying = false;
+            highScoreMenu = false;
+            loading = true;
+            credits = false;
 
             gameOverCounter = 0;
             turnCounter = 0;
+            thankYouSoundEffectCounter = 0;
 
             //Set width and height of window
-            ApplicationView.PreferredLaunchViewSize = new Size(600, 600);
+            ApplicationView.PreferredLaunchViewSize = new Size(800, 600);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             //Start background music
@@ -79,6 +100,12 @@ namespace App1
             //Gameover sound effect
             gameoverSoundEffect = new MediaPlayer();
             gameoverSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_game_over.wav"));
+
+            //Thank you sound effect
+            thankYouSoundEffect = new MediaPlayer();
+            thankYouSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_thank_you.wav"));
+
+            menuSelector = new menuSelector();
         }
 
         private void resetSong(MediaPlayer sender, object args)
@@ -94,13 +121,35 @@ namespace App1
             rect.X = 0;
             rect.Y = 0;
             rect.Width = 800;
-            rect.Height = 800;
+            rect.Height = 600;
 
-            args.DrawingSession.DrawRectangle(rect, snake.backgroundColor);
+            args.DrawingSession.DrawRectangle(rect, snake.foregroundColor);
             args.DrawingSession.FillRectangle(rect, snake.backgroundColor);
 
             if (gameIsRunning)
             {
+                Rect scoreBoard = new Rect();
+                scoreBoard.X = 601;
+                scoreBoard.Y = 0;
+                scoreBoard.Width = 199;
+                scoreBoard.Height = 600;
+                args.DrawingSession.DrawRectangle(scoreBoard, snake.foregroundColor);
+                args.DrawingSession.FillRectangle(scoreBoard, snake.foregroundColor);
+
+                Rect playerScoreRec = new Rect();
+                playerScoreRec.X = 641;
+                playerScoreRec.Y = 181;
+                playerScoreRec.Width = 160;
+                playerScoreRec.Height = 40;
+
+                CanvasTextFormat textFormatOfScoreText = new CanvasTextFormat()
+                {
+                    FontFamily = "Playbill",
+                    FontSize = 128
+                };
+
+                args.DrawingSession.DrawText($"{snake.playerScore}", playerScoreRec, snake.backgroundColor, textFormatOfScoreText);
+
                 //Draw Game
                 snake.drawGame(args.DrawingSession);
             }          
@@ -108,18 +157,140 @@ namespace App1
             else if (gameOver)
             {
                 Rect locOfGameOverText = new Rect();
-                locOfGameOverText.X = 100;
+                locOfGameOverText.X = 200;
                 locOfGameOverText.Y = 200;
                 locOfGameOverText.Width = 400;
                 locOfGameOverText.Height = 200;
 
                 CanvasTextFormat textFormatOfGameOverText = new CanvasTextFormat()
                 {
-                    FontFamily = "Arial Black",
-                    FontSize = 72
+                    FontFamily = "Playbill",
+                    FontSize = 128
                 };
 
-                args.DrawingSession.DrawText("Game Over", locOfGameOverText, snake.foregroundColor, textFormatOfGameOverText);
+                args.DrawingSession.DrawText("GAME OVER", locOfGameOverText, Colors.White, textFormatOfGameOverText);
+            }
+
+            else if (startPageDisplaying)
+            {
+                Rect titleRec = new Rect();
+                titleRec.X = 250;
+                titleRec.Y = 20;
+                titleRec.Width = 400;
+                titleRec.Height = 100;
+
+                Rect selectionText = new Rect();
+                selectionText.X = 200;
+                selectionText.Y = 200;
+                selectionText.Width = 400;
+                selectionText.Height = 200;
+
+
+                CanvasTextFormat textFormatOfTitleText = new CanvasTextFormat()
+                {
+                    FontFamily = "Playbill",
+                    FontSize = 128
+                };
+
+                CanvasTextFormat textFormatOfSelectionText = new CanvasTextFormat()
+                {
+                    FontFamily = "Playbill",
+                    FontSize = 48
+                };
+
+                string selectionString = "PLAY!!!\nSETTINGS!!!\nHOW TO PLAY???\nCREDITS!!!\n";
+                args.DrawingSession.DrawText("SNAKE!!!", titleRec, Colors.White, textFormatOfTitleText);
+                args.DrawingSession.DrawText(selectionString, selectionText, Colors.White, textFormatOfSelectionText);
+
+                menuSelector.draw(args.DrawingSession);
+            }
+
+            else if(settingsPageDisplaying)
+            {
+                Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                HorriblyFormattedTextPleaseRemove.X = 100;
+                HorriblyFormattedTextPleaseRemove.Y = 100;
+                HorriblyFormattedTextPleaseRemove.Width = 100;
+                HorriblyFormattedTextPleaseRemove.Height = 100;
+
+                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                {
+                    FontFamily = "Arial",
+                    FontSize = 12
+                };
+
+                args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+            }
+
+            else if(howToPlayDisplaying)
+            {
+                Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                HorriblyFormattedTextPleaseRemove.X = 100;
+                HorriblyFormattedTextPleaseRemove.Y = 100;
+                HorriblyFormattedTextPleaseRemove.Width = 100;
+                HorriblyFormattedTextPleaseRemove.Height = 100;
+
+                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                {
+                    FontFamily = "Arial",
+                    FontSize = 12
+                };
+
+                args.DrawingSession.DrawText("How to play", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+            }
+
+            else if(highScoreMenu)
+            {
+                Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                HorriblyFormattedTextPleaseRemove.X = 100;
+                HorriblyFormattedTextPleaseRemove.Y = 100;
+                HorriblyFormattedTextPleaseRemove.Width = 100;
+                HorriblyFormattedTextPleaseRemove.Height = 100;
+
+                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                {
+                    FontFamily = "Arial",
+                    FontSize = 12
+                };
+
+                args.DrawingSession.DrawText("High score", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+            }
+
+            else if(loading)
+            {
+                Rect locOfLoadText = new Rect();
+                locOfLoadText.X = 240;
+                locOfLoadText.Y = 200;
+                locOfLoadText.Width = 400;
+                locOfLoadText.Height = 200;
+
+                CanvasTextFormat textFormatOfLoadText = new CanvasTextFormat()
+                {
+                    FontFamily = "Playbill",
+                    FontSize = 128
+                };
+
+                args.DrawingSession.DrawText("LOADING...", locOfLoadText, Colors.White, textFormatOfLoadText);
+            }
+
+            else if (credits)
+            {
+                Rect creditsRec = new Rect();
+                creditsRec.Y = 20;
+                creditsRec.X = 100;
+                creditsRec.Width = 600;
+                creditsRec.Height = 400;
+
+                CanvasTextFormat textFormatOfCredits = new CanvasTextFormat()
+                {
+                    FontFamily = "Playbill",
+                    FontSize = 68
+                };
+
+                string creditsString = "THE CREW:\n\nALEX ROSATI (SUPER COOL)\nAVIAN CALADO\nPETER SCHUBERT\nNISARG"
+                                        + " PATEL\n\nPRESS ENTER OR A TO GO BACK";
+
+                args.DrawingSession.DrawText(creditsString, creditsRec, Colors.White, textFormatOfCredits);
             }
         }
 
@@ -127,6 +298,8 @@ namespace App1
         {
            if(gameIsRunning)
            {
+               controllerGameLogic();
+
                if (!canTurn)
                {
                     ++turnCounter;
@@ -154,13 +327,49 @@ namespace App1
                 {
                     gameOver = false;
                     snake.resetGame();
-                    gameIsRunning = true;
+                    highScoreMenu = true;
                     gameOverCounter = 0;
                 }
            }
+
+           else if(startPageDisplaying)
+           {
+
+           }
+
+           else if(settingsPageDisplaying)
+           {
+
+           }
+
+           else if(howToPlayDisplaying)
+           {
+                
+            }
+
+           else if(highScoreMenu)
+           {
+
+           }
+
+           else if(loading)
+           {
+                ++loadCounter;
+
+                if(loadCounter == 80)
+                {
+                    loading = false;
+                    howToPlayDisplaying = true;
+                }
+           }
+
+           else if (credits)
+           {
+          
+           }
         }
 
-        private async void updateGame()
+        private void updateGame()
         {
             snake.updateGame();
 
@@ -320,6 +529,9 @@ namespace App1
         //Runs when key is pressed down.
         private void Canvas_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
+            bool startedAtStartPage = startPageDisplaying;
+
+            //When game is running
             //Left key is pressed when the user was not already going left or right
             if (e.VirtualKey == Windows.System.VirtualKey.Left && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft 
                 && !cantChangeDirection&& gameIsRunning && canTurn)
@@ -358,6 +570,116 @@ namespace App1
                 turningUp = true;
                 cantChangeDirection = false;
                 canTurn = false;
+            }
+
+            if(startPageDisplaying)
+            {
+                if(e.VirtualKey == Windows.System.VirtualKey.Up)
+                {
+                    menuSelector.moveUp();
+                }
+
+                else if (e.VirtualKey == Windows.System.VirtualKey.Down)
+                {
+                    menuSelector.moveDown();
+                }
+
+                if (e.VirtualKey == Windows.System.VirtualKey.Enter)
+                {
+                    if (menuSelector.selection == startPageSelection.Play)
+                    {
+                        startPageDisplaying = false;
+                        gameIsRunning = true;
+                    }
+
+                    else if (menuSelector.selection == startPageSelection.Settings)
+                    {
+                        startPageDisplaying = false;
+                        settingsPageDisplaying = true;
+                    }
+
+                    else if (menuSelector.selection == startPageSelection.HowToPlay)
+                    {
+                        startPageDisplaying = false;
+                        howToPlayDisplaying = true;
+                    }
+
+                    else if (menuSelector.selection == startPageSelection.Credits)
+                    {
+                        startPageDisplaying = false;
+                        credits = true;
+                        thankYouSoundEffect.Play();
+                    }
+                }
+            }
+
+            //Go to start menu from how to play menu
+            if (!startedAtStartPage && howToPlayDisplaying && e.VirtualKey == Windows.System.VirtualKey.Enter)
+            {
+                howToPlayDisplaying = false;
+                startPageDisplaying = true;
+                menuSelector = new menuSelector();
+            }
+
+            //Go back to start menu from credits
+            if (!startedAtStartPage && credits && e.VirtualKey == Windows.System.VirtualKey.Enter)
+            {
+                credits = false;
+                startPageDisplaying = true;
+                menuSelector = new menuSelector();
+            }
+
+            //Go back to start menu from settings page
+            if (!startedAtStartPage && settingsPageDisplaying && e.VirtualKey == Windows.System.VirtualKey.Enter)
+            {
+                settingsPageDisplaying = false;
+                startPageDisplaying = true;
+                menuSelector = new menuSelector();
+            }
+
+            //From high score menu to start menu
+            if (highScoreMenu && e.VirtualKey == Windows.System.VirtualKey.Enter)
+            {
+                highScoreMenu = false;
+                startPageDisplaying = true;
+            }
+        }
+
+        //Makes Snake Turn when d-pad on controller is pressed
+        private void controllerGameLogic()
+        {
+            if (Gamepad.Gamepads.Count > 0)
+            {
+                controller = Gamepad.Gamepads.First();
+                GamepadReading reading = controller.GetCurrentReading();
+
+                if (reading.Buttons.HasFlag(GamepadButtons.DPadLeft) && !snake.snakeHead.goingRight && !snake.snakeHead.goingLeft
+                && canTurn)
+                {
+                    turningLeft = true;
+                    canTurn = false;
+                }
+
+                else if (reading.Buttons.HasFlag(GamepadButtons.DPadRight) && !snake.snakeHead.goingLeft && !snake.snakeHead.goingRight
+                && canTurn)
+                {
+                    turningRight = true;
+                    canTurn = false;
+                }
+
+                else if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !snake.snakeHead.goingUp && !snake.snakeHead.goingDown
+                && canTurn)
+                {
+                    turningDown = true;
+                    canTurn = false;
+                }
+
+                else if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !snake.snakeHead.goingDown && !snake.snakeHead.goingUp
+                && canTurn)
+                {
+                    turningUp = true;
+                    canTurn = false;
+                }
             }
         }
     }

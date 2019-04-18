@@ -224,19 +224,24 @@ namespace App1
 
             else if(howToPlayDisplaying)
             {
-                Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                HorriblyFormattedTextPleaseRemove.X = 100;
-                HorriblyFormattedTextPleaseRemove.Y = 100;
-                HorriblyFormattedTextPleaseRemove.Width = 100;
-                HorriblyFormattedTextPleaseRemove.Height = 100;
+                Rect howToPlayRect = new Rect();
+                    howToPlayRect.X = 200;
+                    howToPlayRect.Y = 100;
+                    howToPlayRect.Width = 500;
+                    howToPlayRect.Height = 200;
 
-                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                CanvasTextFormat rectFormat = new CanvasTextFormat()
                 {
-                    FontFamily = "Arial",
-                    FontSize = 12
+                    FontFamily = "Playbill",
+                    FontSize = 48
                 };
 
-                args.DrawingSession.DrawText("How to play", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+                args.DrawingSession.DrawText("How to play in Xbox/Screen:\n\n" +
+                                             "Up stick/key = Go up\n" +
+                                             "Down stick/key = Go down\n" +
+                                             "Left stick/key = Go left\n" +
+                                             "Right stick/key = Go right\n\n" +
+                                             "Press Enter to go to home page", howToPlayRect, Colors.White, rectFormat);
             }
 
             else if(highScoreMenu)
@@ -288,7 +293,7 @@ namespace App1
                 };
 
                 string creditsString = "THE CREW:\n\nALEX ROSATI (SUPER COOL)\nAVIAN CALADO\nPETER SCHUBERT\nNISARG"
-                                        + " PATEL\n\nPRESS ENTER OR A TO GO BACK";
+                                        + " PATEL \n\nPRESS ENTER OR A TO GO BACK";
 
                 args.DrawingSession.DrawText(creditsString, creditsRec, Colors.White, textFormatOfCredits);
             }
@@ -345,7 +350,7 @@ namespace App1
            else if(howToPlayDisplaying)
            {
                 
-            }
+           }
 
            else if(highScoreMenu)
            {

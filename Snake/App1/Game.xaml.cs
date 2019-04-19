@@ -23,6 +23,7 @@ using Windows.Gaming.Input;
 using Microsoft.Graphics.Canvas;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+// This comment is pointless
 
 namespace App1
 {

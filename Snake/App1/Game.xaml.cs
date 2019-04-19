@@ -20,6 +20,7 @@ using Microsoft.Graphics.Canvas.Text;
 using Windows.Media.Playback;
 using Windows.Media.Core;
 using Windows.Gaming.Input;
+using Microsoft.Graphics.Canvas;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -87,7 +88,7 @@ namespace App1
             thankYouSoundEffectCounter = 0;
 
             //Set width and height of window
-            ApplicationView.PreferredLaunchViewSize = new Size(800, 600);
+            ApplicationView.PreferredLaunchViewSize = new Size(600, 400);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             //Start background music
@@ -120,8 +121,8 @@ namespace App1
             Rect rect = new Rect();
             rect.X = 0;
             rect.Y = 0;
-            rect.Width = 800;
-            rect.Height = 600;
+            rect.Width = 600;
+            rect.Height = 400;
 
             args.DrawingSession.DrawRectangle(rect, snake.foregroundColor);
             args.DrawingSession.FillRectangle(rect, snake.backgroundColor);
@@ -129,23 +130,23 @@ namespace App1
             if (gameIsRunning)
             {
                 Rect scoreBoard = new Rect();
-                scoreBoard.X = 601;
+                scoreBoard.X = 401;
                 scoreBoard.Y = 0;
                 scoreBoard.Width = 199;
-                scoreBoard.Height = 600;
+                scoreBoard.Height = 400;
                 args.DrawingSession.DrawRectangle(scoreBoard, snake.foregroundColor);
                 args.DrawingSession.FillRectangle(scoreBoard, snake.foregroundColor);
 
                 Rect playerScoreRec = new Rect();
-                playerScoreRec.X = 641;
+                playerScoreRec.X = 441;
                 playerScoreRec.Y = 181;
                 playerScoreRec.Width = 160;
                 playerScoreRec.Height = 40;
 
                 CanvasTextFormat textFormatOfScoreText = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 128
+                    FontFamily = "Courier New",
+                    FontSize = 72
                 };
 
                 args.DrawingSession.DrawText($"{snake.playerScore}", playerScoreRec, snake.backgroundColor, textFormatOfScoreText);
@@ -158,14 +159,14 @@ namespace App1
             {
                 Rect locOfGameOverText = new Rect();
                 locOfGameOverText.X = 200;
-                locOfGameOverText.Y = 200;
-                locOfGameOverText.Width = 400;
+                locOfGameOverText.Y = 125;
+                locOfGameOverText.Width = 200;
                 locOfGameOverText.Height = 200;
 
                 CanvasTextFormat textFormatOfGameOverText = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 128
+                    FontFamily = "Courier New",
+                    FontSize = 72
                 };
 
                 args.DrawingSession.DrawText("GAME OVER", locOfGameOverText, Colors.White, textFormatOfGameOverText);
@@ -174,34 +175,39 @@ namespace App1
             else if (startPageDisplaying)
             {
                 Rect titleRec = new Rect();
-                titleRec.X = 250;
+                titleRec.X = 25;
                 titleRec.Y = 20;
                 titleRec.Width = 400;
                 titleRec.Height = 100;
 
                 Rect selectionText = new Rect();
-                selectionText.X = 200;
+                selectionText.X = 60;
                 selectionText.Y = 200;
                 selectionText.Width = 400;
                 selectionText.Height = 200;
 
+                Rect imageRec = new Rect();
+                imageRec.X = 300;
+                imageRec.Y = 40;
+                imageRec.Width = 216;
+                imageRec.Height = 216;
+
 
                 CanvasTextFormat textFormatOfTitleText = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 128
+                    FontFamily = "Courier New",
+                    FontSize = 72
                 };
 
                 CanvasTextFormat textFormatOfSelectionText = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 48
+                    FontFamily = "Courier New",
+                    FontSize = 44
                 };
 
                 string selectionString = "PLAY!!!\nSETTINGS!!!\nHOW TO PLAY???\nCREDITS!!!\n";
                 args.DrawingSession.DrawText("SNAKE!!!", titleRec, Colors.White, textFormatOfTitleText);
                 args.DrawingSession.DrawText(selectionString, selectionText, Colors.White, textFormatOfSelectionText);
-
                 menuSelector.draw(args.DrawingSession);
             }
 
@@ -225,23 +231,24 @@ namespace App1
             else if(howToPlayDisplaying)
             {
                 Rect howToPlayRect = new Rect();
-                    howToPlayRect.X = 200;
-                    howToPlayRect.Y = 100;
-                    howToPlayRect.Width = 500;
-                    howToPlayRect.Height = 200;
+                    howToPlayRect.X = 25;
+                    howToPlayRect.Y = 25;
+                    howToPlayRect.Width = 550;
+                    howToPlayRect.Height = 300;
 
                 CanvasTextFormat rectFormat = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 48
+                    FontFamily = "Courier New",
+                    FontSize = 24
                 };
 
-                args.DrawingSession.DrawText("How to play in Xbox/Screen:\n\n" +
-                                             "Up stick/key = Go up\n" +
-                                             "Down stick/key = Go down\n" +
-                                             "Left stick/key = Go left\n" +
-                                             "Right stick/key = Go right\n\n" +
-                                             "Press Enter to go to home page", howToPlayRect, Colors.White, rectFormat);
+                args.DrawingSession.DrawText("HOW TO PLAY XBOX/WINDOWS:\n\n" +
+                                             "D-PAD UP/UP ARROW = GO UP\n" +
+                                             "D-PAD DOWN/DOWN ARROW = GO DOWN\n" +
+                                             "D-PAD LEFT/LEFT ARROW = GO LEFT\n" +
+                                             "D-PAD RIGHT/RIGHT ARROW = GO RIGHT\n" +
+                                             "ENTER/A BUTTON = SELECT/BACK/ADVANCE\n\n" +
+                                             "PRESS ENTER OR A TO GO TO START MENU", howToPlayRect, Colors.White, rectFormat);
             }
 
             else if(highScoreMenu)
@@ -264,15 +271,16 @@ namespace App1
             else if(loading)
             {
                 Rect locOfLoadText = new Rect();
-                locOfLoadText.X = 240;
-                locOfLoadText.Y = 200;
+                locOfLoadText.X = 125;
+                locOfLoadText.Y = 150;
                 locOfLoadText.Width = 400;
                 locOfLoadText.Height = 200;
 
                 CanvasTextFormat textFormatOfLoadText = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 128
+                    FontFamily = "Courier New",
+                    FontSize = 56,
+                    FontStyle = Windows.UI.Text.FontStyle.Italic
                 };
 
                 args.DrawingSession.DrawText("LOADING...", locOfLoadText, Colors.White, textFormatOfLoadText);
@@ -282,18 +290,18 @@ namespace App1
             {
                 Rect creditsRec = new Rect();
                 creditsRec.Y = 20;
-                creditsRec.X = 100;
+                creditsRec.X = 20;
                 creditsRec.Width = 600;
                 creditsRec.Height = 400;
 
                 CanvasTextFormat textFormatOfCredits = new CanvasTextFormat()
                 {
-                    FontFamily = "Playbill",
-                    FontSize = 68
+                    FontFamily = "Courier New",
+                    FontSize = 32
                 };
 
-                string creditsString = "THE CREW:\n\nALEX ROSATI (SUPER COOL)\nAVIAN CALADO\nPETER SCHUBERT\nNISARG"
-                                        + " PATEL \n\nPRESS ENTER OR A TO GO BACK";
+                string creditsString = "THE CREW:\n\nALEX ROSATI (SUPER COOL)\nAVIAN CALADO (SLEEPY)\nPETER SCHUBERT (COOL)\nNISARG"
+                                        + " PATEL (COOL) \n\nPRESS ENTER OR A TO GO BACK";
 
                 args.DrawingSession.DrawText(creditsString, creditsRec, Colors.White, textFormatOfCredits);
             }
@@ -523,8 +531,8 @@ namespace App1
             }
 
             //Game ends if snake hits edge of window
-            if (snake.snakeHead.x == 0 || snake.snakeHead.x == 580 ||
-                snake.snakeHead.y == 0 || snake.snakeHead.y == 580)
+            if (snake.snakeHead.x == 0 || snake.snakeHead.x == 380 ||
+                snake.snakeHead.y == 0 || snake.snakeHead.y == 380)
             {
                 gameOver = true;
                 gameIsRunning = false;

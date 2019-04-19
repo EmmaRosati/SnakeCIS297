@@ -31,8 +31,8 @@ namespace App1
         {
             //Give apple random x and y
             Random RNG = new Random();
-            x = RNG.Next(40, 560);
-            y = RNG.Next(40, 560);
+            x = RNG.Next(40, 360);
+            y = RNG.Next(40, 360);
             l = 20;
             appleColor = color;
         }
@@ -69,7 +69,6 @@ namespace App1
         public Color backgroundColor;
         public bool growSnake;
         private MediaPlayer biteSoundEffect;
-        private Gamepad controller;
         public int playerScore;
 
         public Snake(Color foregroundColor, Color backgroundColor)
@@ -270,8 +269,8 @@ namespace App1
 
         public Head(Color color)
         {
-            x = 300;
-            y = 300;
+            x = 200;
+            y = 200;
             l = 20;
             headColor = color;
 
@@ -573,7 +572,7 @@ namespace App1
             atBottom = false;
 
             selector = new Rect();
-            selector.X = 160;
+            selector.X = 25;
             selector.Y = 210;
             selector.Height = 20;
             selector.Width = 20;

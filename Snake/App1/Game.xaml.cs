@@ -43,6 +43,7 @@ namespace App1
         private Gamepad controller;
 
         menuSelector menuSelector;
+        menuSelector_Settings menuSelector_Settings;
 
         private int gameOverCounter;
         private int turnCounter;
@@ -58,7 +59,11 @@ namespace App1
         private bool gameIsRunning;
         private bool canTurn;
         private bool startPageDisplaying;
+
         private bool settingsPageDisplaying;
+        private bool IsColorColumn; // For Color Column
+        
+
         private bool howToPlayDisplaying;
         private bool highScoreMenu;
         private bool loading;
@@ -81,10 +86,13 @@ namespace App1
             canTurn = true; //Serves different purpose than cantChangeDirection
             startPageDisplaying = false;
             settingsPageDisplaying = false;
+            IsColorColumn = true;
             howToPlayDisplaying = false;
             highScoreMenu = false;
             loading = true;
             credits = false;
+
+
 
             gameOverCounter = 0;
             turnCounter = 0;
@@ -110,6 +118,7 @@ namespace App1
             thankYouSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_thank_you.wav"));
 
             menuSelector = new menuSelector();
+            menuSelector_Settings = new menuSelector_Settings();
         }
 
         private void resetSong(MediaPlayer sender, object args)
@@ -265,7 +274,9 @@ namespace App1
                 args.DrawingSession.DrawText(select_Colors, selectionTextColor, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText(select_Music, selectionTextMusic, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText("PRESS ENTER OR A TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
-                menuSelector.draw(args.DrawingSession);
+                menuSelector_Settings.draw(args.DrawingSession);
+
+
 
             }
 
@@ -670,6 +681,32 @@ namespace App1
             if (settingsPageDisplaying)
             {
                 
+                if (e.VirtualKey == Windows.System.VirtualKey.Up && IsColorColumn )
+                {
+                    menuSelector_Settings.moveUp_Color();
+                }
+
+                else if (e.VirtualKey == Windows.System.VirtualKey.Down && IsColorColumn)
+                {
+                    menuSelector_Settings.moveDown_Color();
+                }
+                else if(e.VirtualKey == Windows.System.VirtualKey.Right && IsColorColumn)
+                {
+                    IsColorColumn = false;
+                }
+                else if (e.VirtualKey == Windows.System.VirtualKey.Left && !IsColorColumn)
+                {
+                    IsColorColumn = true;
+                }
+                else if(e.VirtualKey==Windows.System.VirtualKey.Up && !IsColorColumn)
+                {
+                    menuSelector_Settings.moveUp_Music();
+                }
+                else if (e.VirtualKey == Windows.System.VirtualKey.Down && !IsColorColumn)
+                {
+                    menuSelector_Settings.moveDown_Music();
+                }
+
             }
 
             //Go to start menu from how to play menu
@@ -691,6 +728,25 @@ namespace App1
             //Go back to start menu from settings page
             if (!startedAtStartPage && settingsPageDisplaying && e.VirtualKey == Windows.System.VirtualKey.Enter)
             {
+                if(menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
+                {
+                    snake.foregroundColor = Colors.DarkOrange;
+
+
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.Cyan)
+                {
+                    snake.foregroundColor = Colors.Cyan;
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.Green)
+                {
+                    snake.foregroundColor = Colors.Green;
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.HotPink)
+                {
+                    snake.foregroundColor = Colors.HotPink;
+                }
+                
                 settingsPageDisplaying = false;
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();

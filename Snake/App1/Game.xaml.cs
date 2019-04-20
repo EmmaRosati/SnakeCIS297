@@ -69,11 +69,13 @@ namespace App1
         private bool loading;
         private bool credits;
 
+        private Color currentColor;
+
         public Game()
         {
             this.InitializeComponent();
             snake = new Snake(Colors.DarkOrange, Colors.Black);
-
+            currentColor = Colors.DarkOrange;
             //Add method to keydown event
             Window.Current.CoreWindow.KeyDown += Canvas_KeyDown;
             cantChangeDirection = false; //prevents key down event from firing off twice
@@ -391,7 +393,7 @@ namespace App1
                 if (gameOverCounter == 360)
                 {
                     gameOver = false;
-                    snake.resetGame();
+                    snake.resetGame(currentColor);
                     highScoreMenu = true;
                     gameOverCounter = 0;
                 }
@@ -730,23 +732,23 @@ namespace App1
             {
                 if(menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
                 {
-                    snake.foregroundColor = Colors.DarkOrange;
+                    currentColor = Colors.DarkOrange;
 
 
                 }
                 else if (menuSelector_Settings.selection_color == ColorSelection.Cyan)
                 {
-                    snake.foregroundColor = Colors.Cyan;
+                    currentColor = Colors.Cyan;
                 }
                 else if (menuSelector_Settings.selection_color == ColorSelection.Green)
                 {
-                    snake.foregroundColor = Colors.Green;
+                    currentColor = Colors.Green;
                 }
                 else if (menuSelector_Settings.selection_color == ColorSelection.HotPink)
                 {
-                    snake.foregroundColor = Colors.HotPink;
+                    currentColor = Colors.HotPink;
                 }
-                
+                snake.resetGame(currentColor);
                 settingsPageDisplaying = false;
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();

@@ -98,8 +98,9 @@ namespace App1
             bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
         }
 
-        public void resetGame()
+        public void resetGame(Color newColor)
         {
+            foregroundColor = newColor;
             snakeHead = new Head(foregroundColor);
             apple = new Apple(foregroundColor);
             bodySegments = new List<BodySegment>();

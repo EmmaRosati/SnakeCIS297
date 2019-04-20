@@ -37,6 +37,8 @@ namespace App1
         private MediaPlayer gameoverSoundEffect;
         private MediaPlayer thankYouSoundEffect;
 
+        
+
         private Gamepad controller;
 
         menuSelector menuSelector;
@@ -191,7 +193,6 @@ namespace App1
                 imageRec.Y = 40;
                 imageRec.Width = 216;
                 imageRec.Height = 216;
-
 
                 CanvasTextFormat textFormatOfTitleText = new CanvasTextFormat()
                 {

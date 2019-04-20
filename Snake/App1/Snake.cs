@@ -18,6 +18,8 @@ namespace App1
 {
     enum direction { R, L, U, D};
     public enum startPageSelection { Play, Settings, HowToPlay, Credits };
+    public enum ColorSelection {DarkOrange, Green, Cyan, HotPink };
+    public enum MusicSelection {Song1, Song2, Song3 };
 
     //Blocks that the snake hits to grow
     class Apple
@@ -565,6 +567,7 @@ namespace App1
         private bool atBottom;
         private Rect selector;
         public startPageSelection selection;
+     
 
         public menuSelector()
         {
@@ -609,6 +612,7 @@ namespace App1
                 }
             }
         }
+     
 
         public void draw(CanvasDrawingSession canvas)
         {

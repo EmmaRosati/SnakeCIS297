@@ -215,19 +215,58 @@ namespace App1
 
             else if(settingsPageDisplaying)
             {
-                Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                HorriblyFormattedTextPleaseRemove.X = 100;
-                HorriblyFormattedTextPleaseRemove.Y = 100;
-                HorriblyFormattedTextPleaseRemove.Width = 100;
-                HorriblyFormattedTextPleaseRemove.Height = 100;
+                //Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                //HorriblyFormattedTextPleaseRemove.X = 100;
+                //HorriblyFormattedTextPleaseRemove.Y = 100;
+                //HorriblyFormattedTextPleaseRemove.Width = 100;
+                //HorriblyFormattedTextPleaseRemove.Height = 100;
 
-                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                //CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                //{
+                //    FontFamily = "Arial",
+                //    FontSize = 12
+                //};
+
+                //args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+                Rect SettingsTitleRec = new Rect();
+                SettingsTitleRec.X = 25;
+                SettingsTitleRec.Y = 20;
+                SettingsTitleRec.Width = 200;
+                SettingsTitleRec.Height = 50;
+
+                Rect selectionTextColor = new Rect();
+                selectionTextColor.X = 60;
+                selectionTextColor.Y = 100;
+                selectionTextColor.Width = 400;
+                selectionTextColor.Height = 200;
+
+                Rect selectionTextMusic = new Rect();
+                selectionTextMusic.X = 480;
+                selectionTextMusic.Y = 100;
+                selectionTextMusic.Width = 400;
+                selectionTextMusic.Height = 200;
+
+                Rect ExitSign = new Rect();
+                ExitSign.X = 25;
+                ExitSign.Y = 340;
+                ExitSign.Width = 550;
+                ExitSign.Height = 200;
+
+
+
+                string select_Colors = "Dark Orange \n\nGreen \n\nCyan \n\nHot Pink \n\n";
+                string select_Music = "Song 1 \n\nSong 2 \n\nSong 3 \n\n";
+                CanvasTextFormat SettingsFormatOfTitleText = new CanvasTextFormat()
                 {
-                    FontFamily = "Arial",
-                    FontSize = 12
+                    FontFamily = "Courier New",
+                    FontSize = 25
                 };
+                args.DrawingSession.DrawText("Settings!!!", SettingsTitleRec, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText(select_Colors, selectionTextColor, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText(select_Music, selectionTextMusic, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText("PRESS ENTER OR A TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
+                menuSelector.draw(args.DrawingSession);
 
-                args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
             }
 
             else if(howToPlayDisplaying)
@@ -626,6 +665,11 @@ namespace App1
                         thankYouSoundEffect.Play();
                     }
                 }
+            }
+            // Peter's Part 
+            if (settingsPageDisplaying)
+            {
+                
             }
 
             //Go to start menu from how to play menu

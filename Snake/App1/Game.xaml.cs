@@ -95,7 +95,7 @@ namespace App1
             credits = false;
 
 
-
+            /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
             gameOverCounter = 0;
             turnCounter = 0;
             thankYouSoundEffectCounter = 0;
@@ -252,7 +252,7 @@ namespace App1
                 selectionTextColor.Height = 200;
 
                 Rect selectionTextMusic = new Rect();
-                selectionTextMusic.X = 480;
+                selectionTextMusic.X = 380;
                 selectionTextMusic.Y = 100;
                 selectionTextMusic.Width = 400;
                 selectionTextMusic.Height = 200;
@@ -266,7 +266,7 @@ namespace App1
 
 
                 string select_Colors = "Dark Orange \n\nGreen \n\nCyan \n\nHot Pink \n\n";
-                string select_Music = "Song 1 \n\nSong 2 \n\nSong 3 \n\n";
+                string select_Music = "Duck Tales \n\nOne More Line \n\nGTO Theme \n\n";
                 CanvasTextFormat SettingsFormatOfTitleText = new CanvasTextFormat()
                 {
                     FontFamily = "Courier New",
@@ -749,6 +749,35 @@ namespace App1
                     currentColor = Colors.HotPink;
                 }
                 snake.resetGame(currentColor);
+
+
+                // Menu
+
+                if(menuSelector_Settings.selection_music == MusicSelection.Song1)
+                {
+                    // duck tale
+                  
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
+                    
+
+                }
+                else if (menuSelector_Settings.selection_music == MusicSelection.Song2)
+                {
+                    // One more line
+                  
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/one_more_line_song.wav"));
+                   
+
+                }
+                else if (menuSelector_Settings.selection_music== MusicSelection.Song3)
+                {
+                    // GTO theme
+                    // source   https://www.youtube.com/watch?v=Uc6vF1PWdFY 
+                 
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/gto_theme.wav"));
+
+                   
+                }
                 settingsPageDisplaying = false;
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();

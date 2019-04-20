@@ -589,7 +589,7 @@ namespace App1
             selector_color.Width = 15;
 
             selector_music = new Rect();
-            selector_music.X = 445;
+            selector_music.X = 345;
             selector_music.Y = 105;
             selector_music.Height = 15;
             selector_music.Width = 15;

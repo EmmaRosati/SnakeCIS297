@@ -207,19 +207,24 @@ namespace App1
 
             else if(settingsPageDisplaying)
             {
-                Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                HorriblyFormattedTextPleaseRemove.X = 100;
-                HorriblyFormattedTextPleaseRemove.Y = 100;
-                HorriblyFormattedTextPleaseRemove.Width = 100;
-                HorriblyFormattedTextPleaseRemove.Height = 100;
+                //Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                //HorriblyFormattedTextPleaseRemove.X = 100;
+                //HorriblyFormattedTextPleaseRemove.Y = 100;
+                //HorriblyFormattedTextPleaseRemove.Width = 100;
+                //HorriblyFormattedTextPleaseRemove.Height = 100;
 
-                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
-                {
-                    FontFamily = "Arial",
-                    FontSize = 12
-                };
+                //CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                //{
+                //    FontFamily = "Arial",
+                //    FontSize = 12
+                //};
 
-                args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+                //args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+                Rect SettingsTitle = new Rect();
+                SettingsTitle.X = 250;
+                SettingsTitle.Y = 20;
+                SettingsTitle.Width = 400;
+                SettingsTitle.Height = 100;
             }
 
             else if(howToPlayDisplaying)

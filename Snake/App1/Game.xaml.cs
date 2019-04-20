@@ -43,6 +43,7 @@ namespace App1
         private Gamepad controller;
 
         menuSelector menuSelector;
+        menuSelector_Settings menuSelector_Settings;
 
         private int gameOverCounter;
         private int turnCounter;
@@ -58,17 +59,23 @@ namespace App1
         private bool gameIsRunning;
         private bool canTurn;
         private bool startPageDisplaying;
+
         private bool settingsPageDisplaying;
+        private bool IsColorColumn; // For Color Column
+        
+
         private bool howToPlayDisplaying;
         private bool highScoreMenu;
         private bool loading;
         private bool credits;
 
+        private Color currentColor;
+
         public Game()
         {
             this.InitializeComponent();
             snake = new Snake(Colors.DarkOrange, Colors.Black);
-
+            currentColor = Colors.DarkOrange;
             //Add method to keydown event
             Window.Current.CoreWindow.KeyDown += Canvas_KeyDown;
             cantChangeDirection = false; //prevents key down event from firing off twice
@@ -81,11 +88,14 @@ namespace App1
             canTurn = true; //Serves different purpose than cantChangeDirection
             startPageDisplaying = false;
             settingsPageDisplaying = false;
+            IsColorColumn = true;
             howToPlayDisplaying = false;
             highScoreMenu = false;
             loading = true;
             credits = false;
 
+
+            /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
             gameOverCounter = 0;
             turnCounter = 0;
             thankYouSoundEffectCounter = 0;
@@ -110,6 +120,7 @@ namespace App1
             thankYouSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_thank_you.wav"));
 
             menuSelector = new menuSelector();
+            menuSelector_Settings = new menuSelector_Settings();
         }
 
         private void resetSong(MediaPlayer sender, object args)
@@ -215,19 +226,60 @@ namespace App1
 
             else if(settingsPageDisplaying)
             {
-                Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                HorriblyFormattedTextPleaseRemove.X = 100;
-                HorriblyFormattedTextPleaseRemove.Y = 100;
-                HorriblyFormattedTextPleaseRemove.Width = 100;
-                HorriblyFormattedTextPleaseRemove.Height = 100;
+                //Rect HorriblyFormattedTextPleaseRemove = new Rect();
+                //HorriblyFormattedTextPleaseRemove.X = 100;
+                //HorriblyFormattedTextPleaseRemove.Y = 100;
+                //HorriblyFormattedTextPleaseRemove.Width = 100;
+                //HorriblyFormattedTextPleaseRemove.Height = 100;
 
-                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                //CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
+                //{
+                //    FontFamily = "Arial",
+                //    FontSize = 12
+                //};
+
+                //args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+                Rect SettingsTitleRec = new Rect();
+                SettingsTitleRec.X = 25;
+                SettingsTitleRec.Y = 20;
+                SettingsTitleRec.Width = 200;
+                SettingsTitleRec.Height = 50;
+
+                Rect selectionTextColor = new Rect();
+                selectionTextColor.X = 60;
+                selectionTextColor.Y = 100;
+                selectionTextColor.Width = 400;
+                selectionTextColor.Height = 200;
+
+                Rect selectionTextMusic = new Rect();
+                selectionTextMusic.X = 380;
+                selectionTextMusic.Y = 100;
+                selectionTextMusic.Width = 400;
+                selectionTextMusic.Height = 200;
+
+                Rect ExitSign = new Rect();
+                ExitSign.X = 25;
+                ExitSign.Y = 340;
+                ExitSign.Width = 550;
+                ExitSign.Height = 200;
+
+
+
+                string select_Colors = "Dark Orange \n\nGreen \n\nCyan \n\nHot Pink \n\n";
+                string select_Music = "Duck Tales \n\nOne More Line \n\nGTO Theme \n\n";
+                CanvasTextFormat SettingsFormatOfTitleText = new CanvasTextFormat()
                 {
-                    FontFamily = "Arial",
-                    FontSize = 12
+                    FontFamily = "Courier New",
+                    FontSize = 25
                 };
+                args.DrawingSession.DrawText("Settings!!!", SettingsTitleRec, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText(select_Colors, selectionTextColor, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText(select_Music, selectionTextMusic, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText("PRESS ENTER OR A TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
+                menuSelector_Settings.draw(args.DrawingSession);
 
-                args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
+
+
             }
 
             else if(howToPlayDisplaying)
@@ -341,7 +393,7 @@ namespace App1
                 if (gameOverCounter == 360)
                 {
                     gameOver = false;
-                    snake.resetGame();
+                    snake.resetGame(currentColor);
                     highScoreMenu = true;
                     gameOverCounter = 0;
                 }
@@ -627,6 +679,37 @@ namespace App1
                     }
                 }
             }
+            // Peter's Part 
+            if (settingsPageDisplaying)
+            {
+                
+                if (e.VirtualKey == Windows.System.VirtualKey.Up && IsColorColumn )
+                {
+                    menuSelector_Settings.moveUp_Color();
+                }
+
+                else if (e.VirtualKey == Windows.System.VirtualKey.Down && IsColorColumn)
+                {
+                    menuSelector_Settings.moveDown_Color();
+                }
+                else if(e.VirtualKey == Windows.System.VirtualKey.Right && IsColorColumn)
+                {
+                    IsColorColumn = false;
+                }
+                else if (e.VirtualKey == Windows.System.VirtualKey.Left && !IsColorColumn)
+                {
+                    IsColorColumn = true;
+                }
+                else if(e.VirtualKey==Windows.System.VirtualKey.Up && !IsColorColumn)
+                {
+                    menuSelector_Settings.moveUp_Music();
+                }
+                else if (e.VirtualKey == Windows.System.VirtualKey.Down && !IsColorColumn)
+                {
+                    menuSelector_Settings.moveDown_Music();
+                }
+
+            }
 
             //Go to start menu from how to play menu
             if (!startedAtStartPage && howToPlayDisplaying && e.VirtualKey == Windows.System.VirtualKey.Enter)
@@ -647,6 +730,54 @@ namespace App1
             //Go back to start menu from settings page
             if (!startedAtStartPage && settingsPageDisplaying && e.VirtualKey == Windows.System.VirtualKey.Enter)
             {
+                if(menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
+                {
+                    currentColor = Colors.DarkOrange;
+
+
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.Cyan)
+                {
+                    currentColor = Colors.Cyan;
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.Green)
+                {
+                    currentColor = Colors.Green;
+                }
+                else if (menuSelector_Settings.selection_color == ColorSelection.HotPink)
+                {
+                    currentColor = Colors.HotPink;
+                }
+                snake.resetGame(currentColor);
+
+
+                // Menu
+
+                if(menuSelector_Settings.selection_music == MusicSelection.Song1)
+                {
+                    // duck tale
+                  
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
+                    
+
+                }
+                else if (menuSelector_Settings.selection_music == MusicSelection.Song2)
+                {
+                    // One more line
+                  
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/one_more_line_song.wav"));
+                   
+
+                }
+                else if (menuSelector_Settings.selection_music== MusicSelection.Song3)
+                {
+                    // GTO theme
+                    // source   https://www.youtube.com/watch?v=Uc6vF1PWdFY 
+                 
+                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/gto_theme.wav"));
+
+                   
+                }
                 settingsPageDisplaying = false;
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();

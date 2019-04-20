@@ -18,6 +18,8 @@ namespace App1
 {
     enum direction { R, L, U, D};
     public enum startPageSelection { Play, Settings, HowToPlay, Credits };
+    public enum ColorSelection {DarkOrange, Green, Cyan, HotPink };
+    public enum MusicSelection {Song1, Song2, Song3 };
 
     //Blocks that the snake hits to grow
     class Apple
@@ -96,8 +98,9 @@ namespace App1
             bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
         }
 
-        public void resetGame()
+        public void resetGame(Color newColor)
         {
+            foregroundColor = newColor;
             snakeHead = new Head(foregroundColor);
             apple = new Apple(foregroundColor);
             bodySegments = new List<BodySegment>();
@@ -559,12 +562,113 @@ namespace App1
         }
     }
 
+    public class menuSelector_Settings
+    {
+        private bool atTop_Color;
+        private bool atBottom_Color;
+
+        private bool atBottom_Music;
+        private bool atTop_Music;
+
+        private Rect selector_color;
+        private Rect selector_music;
+        public ColorSelection selection_color;
+        public MusicSelection selection_music;
+        public menuSelector_Settings()
+        {
+            atTop_Color = true;
+            atBottom_Color = false;
+
+            atTop_Music = true;
+            atBottom_Music = false;
+
+            selector_color = new Rect();
+            selector_color.X = 25;
+            selector_color.Y = 105;
+            selector_color.Height = 15;
+            selector_color.Width = 15;
+
+            selector_music = new Rect();
+            selector_music.X = 345;
+            selector_music.Y = 105;
+            selector_music.Height = 15;
+            selector_music.Width = 15;
+
+            selection_color = ColorSelection.DarkOrange;
+            selection_music = MusicSelection.Song1;
+        }
+        public void moveUp_Color()
+        {
+            if (!atTop_Color)
+            {
+                selector_color.Y -= 56;
+                atBottom_Color = false;
+                --selection_color;
+
+                if (selector_color.Y == 105)
+                {
+                    atTop_Color = true;
+                }
+            }
+        }
+        public void moveDown_Color()
+        {
+            if (!atBottom_Color)
+            {
+                selector_color.Y += 56;
+                atTop_Color = false;
+                ++selection_color;
+
+                if (selector_color.Y == 273)
+                {
+                    atBottom_Color = true;
+                }
+            }
+        }
+        public void moveUp_Music()
+        {
+            if (!atTop_Music)
+            {
+                selector_music.Y -= 56;
+                atBottom_Music = false;
+                --selection_music;
+
+                if (selector_music.Y == 105)
+                {
+                    atTop_Music = true;
+                }
+            }
+        }
+        public void moveDown_Music()
+        {
+            if (!atBottom_Music)
+            {
+                selector_music.Y += 56;
+                atTop_Music = false;
+                ++selection_music;
+
+                if (selector_music.Y == 217)
+                {
+                    atBottom_Music = true;
+                }
+            }
+        }
+        public void draw(CanvasDrawingSession canvas)
+        {   // color selector
+            canvas.DrawRectangle(selector_color, Colors.White);
+            canvas.FillRectangle(selector_color, Colors.White);
+            // song selector
+            canvas.DrawRectangle(selector_music, Colors.White);
+            canvas.FillRectangle(selector_music, Colors.White);
+        }
+    }
     public class menuSelector
     {
         private bool atTop;
         private bool atBottom;
         private Rect selector;
         public startPageSelection selection;
+     
 
         public menuSelector()
         {
@@ -609,6 +713,7 @@ namespace App1
                 }
             }
         }
+     
 
         public void draw(CanvasDrawingSession canvas)
         {

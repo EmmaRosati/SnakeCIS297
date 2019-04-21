@@ -18,7 +18,7 @@ namespace App1
 {
     enum direction { R, L, U, D};
     public enum startPageSelection { Play, Settings, HowToPlay, Credits };
-    public enum ColorSelection {DarkOrange, Green, Cyan, HotPink };
+    public enum ColorSelection { DarkOrange, Green, Cyan, HotPink };
     public enum MusicSelection {Song1, Song2, Song3 };
 
     //Blocks that the snake hits to grow
@@ -71,6 +71,7 @@ namespace App1
         public Color backgroundColor;
         public bool growSnake;
         private MediaPlayer biteSoundEffect;
+        private MediaPlayer yahooSoundEffect;
         public int playerScore;
 
         public Snake(Color foregroundColor, Color backgroundColor)
@@ -84,9 +85,19 @@ namespace App1
             growSnake = false;
             playerScore = 0;
 
+            //Stop apple from spawning on snake or right in front of snake
+            while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+            {
+                apple = new Apple(foregroundColor);
+            }
+
             //Set up bite sound effect
             biteSoundEffect = new MediaPlayer();
             biteSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/chomp_sound_effect.wav"));
+
+            //Set up yipee sound effect that never plays
+            yahooSoundEffect = new MediaPlayer();
+            yahooSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_yahoo.wav"));
 
 
             //Initialize snake to have six body segments.
@@ -106,6 +117,12 @@ namespace App1
             bodySegments = new List<BodySegment>();
             covers = new List<Cover>();
             playerScore = 0;
+
+            //Stop apple from spawning on snake or right in front of snake
+            while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+            {
+                apple = new Apple(foregroundColor);
+            }
 
             //Initialize snake to have six body segments.
             bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
@@ -186,6 +203,19 @@ namespace App1
             {
                 if (apple.collides(bs.x, bs.y, bs.l))
                 {
+                    return true;
+                }
+            }
+
+            foreach (Cover c in covers)
+            {
+                if (apple.collides(c.X, c.Y, c.L))
+                {
+                    //This sound effect serves abosolutely no purpose to the user.
+                    //I put it here so I know my code is working, i.e., the apple is not
+                    //spawning on top of any of the covers. This is a rare occurence so this
+                    //sound effect so almost never go off.
+                    yahooSoundEffect.Play();
                     return true;
                 }
             }

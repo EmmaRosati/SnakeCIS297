@@ -34,7 +34,10 @@ namespace App1
     {
         private Snake snake;
 
-        private MediaPlayer backgroundMusicPlayer;
+        private MediaPlayer backgroundMusic;
+        private MediaPlayer duckTalesSongPlayer;
+        private MediaPlayer GTOSongPlayer;
+        private MediaPlayer OneMoreLineSongPlayer;
         private MediaPlayer gameoverSoundEffect;
         private MediaPlayer thankYouSoundEffect;
 
@@ -59,7 +62,9 @@ namespace App1
         private bool gameIsRunning;
         private bool canTurn;
         private bool startPageDisplaying;
-
+        private bool changeToDuckTales;
+        private bool changeToGTO;
+        private bool changeToOneMoreLine;
         private bool settingsPageDisplaying;
         private bool IsColorColumn; // For Color Column
         
@@ -93,6 +98,9 @@ namespace App1
             highScoreMenu = false;
             loading = true;
             credits = false;
+            changeToDuckTales = false;
+            changeToOneMoreLine = false;
+            changeToGTO = false;
 
 
             /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
@@ -105,11 +113,22 @@ namespace App1
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             //Start background music
-            backgroundMusicPlayer = new MediaPlayer();
-            backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
-            backgroundMusicPlayer.Volume = 0.06;
-            backgroundMusicPlayer.MediaEnded += resetSong;
-            backgroundMusicPlayer.Play();
+            duckTalesSongPlayer = new MediaPlayer();
+            duckTalesSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
+            duckTalesSongPlayer.Volume = 0.06;
+            duckTalesSongPlayer.MediaEnded += resetDuckTalesSong;
+            duckTalesSongPlayer.Play();
+            backgroundMusic = duckTalesSongPlayer;
+
+            GTOSongPlayer = new MediaPlayer();
+            GTOSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/gto_theme.wav"));
+            GTOSongPlayer.Volume = 0.06;
+            GTOSongPlayer.MediaEnded += resetGTOSong;
+
+            OneMoreLineSongPlayer = new MediaPlayer();
+            OneMoreLineSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/one_more_line_song.wav"));
+            OneMoreLineSongPlayer.Volume = 0.06;
+            OneMoreLineSongPlayer.MediaEnded += resetOneMoreLineSong;
 
             //Gameover sound effect
             gameoverSoundEffect = new MediaPlayer();
@@ -123,10 +142,22 @@ namespace App1
             menuSelector_Settings = new menuSelector_Settings();
         }
 
-        private void resetSong(MediaPlayer sender, object args)
+        private void resetDuckTalesSong(MediaPlayer sender, object args)
         {
-            backgroundMusicPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
-            backgroundMusicPlayer.Play();
+            duckTalesSongPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+            duckTalesSongPlayer.Play();
+        }
+
+        private void resetGTOSong(MediaPlayer sender, object args)
+        {
+            GTOSongPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+            GTOSongPlayer.Play();
+        }
+
+        private void resetOneMoreLineSong(MediaPlayer sender, object args)
+        {
+            OneMoreLineSongPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+            OneMoreLineSongPlayer.Play();
         }
 
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
@@ -226,19 +257,6 @@ namespace App1
 
             else if(settingsPageDisplaying)
             {
-                //Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                //HorriblyFormattedTextPleaseRemove.X = 100;
-                //HorriblyFormattedTextPleaseRemove.Y = 100;
-                //HorriblyFormattedTextPleaseRemove.Width = 100;
-                //HorriblyFormattedTextPleaseRemove.Height = 100;
-
-                //CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
-                //{
-                //    FontFamily = "Arial",
-                //    FontSize = 12
-                //};
-
-                //args.DrawingSession.DrawText("Settings", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
                 Rect SettingsTitleRec = new Rect();
                 SettingsTitleRec.X = 25;
                 SettingsTitleRec.Y = 20;
@@ -267,19 +285,18 @@ namespace App1
 
                 string select_Colors = "Dark Orange \n\nGreen \n\nCyan \n\nHot Pink \n\n";
                 string select_Music = "Duck Tales \n\nOne More Line \n\nGTO Theme \n\n";
+
                 CanvasTextFormat SettingsFormatOfTitleText = new CanvasTextFormat()
                 {
                     FontFamily = "Courier New",
                     FontSize = 25
                 };
+
                 args.DrawingSession.DrawText("Settings!!!", SettingsTitleRec, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText(select_Colors, selectionTextColor, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText(select_Music, selectionTextMusic, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText("PRESS ENTER OR A TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
                 menuSelector_Settings.draw(args.DrawingSession);
-
-
-
             }
 
             else if(howToPlayDisplaying)
@@ -361,8 +378,37 @@ namespace App1
             }
         }
 
+        private void changeMusic()
+        {
+            if (changeToDuckTales)
+            {
+                backgroundMusic.Pause();
+                backgroundMusic = duckTalesSongPlayer;
+                backgroundMusic.Play();
+                changeToDuckTales = false;
+            }
+
+            else if (changeToGTO)
+            {
+                backgroundMusic.Pause();
+                backgroundMusic = GTOSongPlayer;
+                backgroundMusic.Play();
+                changeToGTO = false;
+            }
+
+            else if (changeToOneMoreLine)
+            {
+                backgroundMusic.Pause();
+                backgroundMusic = OneMoreLineSongPlayer;
+                backgroundMusic.Play();
+                changeToOneMoreLine = false;
+            }
+        }
+
         private void canvas_Update(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedUpdateEventArgs args)
         {
+            changeMusic();
+
            if(gameIsRunning)
            {
                controllerGameLogic();
@@ -605,8 +651,8 @@ namespace App1
             {
                 cantChangeDirection = true;
                 turningLeft = true;
-                cantChangeDirection = false;
                 canTurn = false;
+                cantChangeDirection = false;
             }
 
             //Right key is pressed when we are not going right or left
@@ -615,8 +661,8 @@ namespace App1
             {
                 cantChangeDirection = true;
                 turningRight = true;
-                cantChangeDirection = false;
                 canTurn = false;
+                cantChangeDirection = false;
             }
 
             //Down key is pressed when we are not going up or down
@@ -625,8 +671,8 @@ namespace App1
             {
                 cantChangeDirection = true;
                 turningDown = true;
-                cantChangeDirection = false;
                 canTurn = false;
+                cantChangeDirection = false;
             }
 
             //Up key is pressed when we are not going up or down
@@ -635,8 +681,8 @@ namespace App1
             {
                 cantChangeDirection = true;
                 turningUp = true;
-                cantChangeDirection = false;
                 canTurn = false;
+                cantChangeDirection = false;
             }
 
             if(startPageDisplaying)
@@ -733,8 +779,6 @@ namespace App1
                 if(menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
                 {
                     currentColor = Colors.DarkOrange;
-
-
                 }
                 else if (menuSelector_Settings.selection_color == ColorSelection.Cyan)
                 {
@@ -755,28 +799,24 @@ namespace App1
 
                 if(menuSelector_Settings.selection_music == MusicSelection.Song1)
                 {
-                    // duck tale
-                  
-                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
-                    
+                    changeToDuckTales = true;
+
 
                 }
                 else if (menuSelector_Settings.selection_music == MusicSelection.Song2)
                 {
                     // One more line
-                  
-                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/one_more_line_song.wav"));
-                   
+                    changeToOneMoreLine = true;
+
 
                 }
                 else if (menuSelector_Settings.selection_music== MusicSelection.Song3)
                 {
                     // GTO theme
                     // source   https://www.youtube.com/watch?v=Uc6vF1PWdFY 
-                 
-                    backgroundMusicPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/gto_theme.wav"));
+                    changeToGTO = true;
 
-                   
+
                 }
                 settingsPageDisplaying = false;
                 startPageDisplaying = true;

@@ -686,10 +686,10 @@ namespace App1
         public void draw(CanvasDrawingSession canvas)
         {   // color selector
             canvas.DrawRectangle(selector_color, Colors.White);
-            canvas.FillRectangle(selector_color, Colors.White);
+            canvas.FillRectangle(selector_color, Colors.Blue);
             // song selector
             canvas.DrawRectangle(selector_music, Colors.White);
-            canvas.FillRectangle(selector_music, Colors.White);
+            canvas.FillRectangle(selector_music, Colors.LimeGreen);
         }
     }
     public class menuSelector

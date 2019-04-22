@@ -447,23 +447,23 @@ namespace App1
 
            else if(startPageDisplaying)
            {
-
+                gameControllerLogic_StartMenu_SettingsMenu();
            }
 
            else if(settingsPageDisplaying)
            {
-
+                gameControllerLogic_StartMenu_SettingsMenu();
            }
 
            else if(howToPlayDisplaying)
            {
-                
-           }
+                gameControllerLogic_StartMenu_SettingsMenu();
+            }
 
            else if(highScoreMenu)
            {
-
-           }
+                gameControllerLogic_StartMenu_SettingsMenu();
+            }
 
            else if(loading)
            {
@@ -865,6 +865,157 @@ namespace App1
                 {
                     turningUp = true;
                     canTurn = false;
+                }
+
+
+            }
+        }
+        private void gameControllerLogic_StartMenu_SettingsMenu()
+        {
+            bool startedAtStartPage = startPageDisplaying;
+            if (Gamepad.Gamepads.Count > 0) {
+                controller = Gamepad.Gamepads.First();
+                GamepadReading reading = controller.GetCurrentReading();
+
+                if (startPageDisplaying)
+                {
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadDown))
+                    {
+                        menuSelector.moveDown();
+                    }
+                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadUp))
+                    {
+                        menuSelector.moveUp();
+                    }
+                    if (reading.Buttons.HasFlag(GamepadButtons.A))
+                    {
+                        if (menuSelector.selection == startPageSelection.Play)
+                        {
+                            startPageDisplaying = false;
+                            gameIsRunning = true;
+                        }
+
+                        else if (menuSelector.selection == startPageSelection.Settings)
+                        {
+                            startPageDisplaying = false;
+                            settingsPageDisplaying = true;
+                        }
+
+                        else if (menuSelector.selection == startPageSelection.HowToPlay)
+                        {
+                            startPageDisplaying = false;
+                            howToPlayDisplaying = true;
+                        }
+
+                        else if (menuSelector.selection == startPageSelection.Credits)
+                        {
+                            startPageDisplaying = false;
+                            credits = true;
+                            thankYouSoundEffect.Play();
+                        }
+                    }
+                }
+                
+                if (settingsPageDisplaying)
+                {
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && IsColorColumn)
+                    {
+                        menuSelector_Settings.moveUp_Color();
+                    }
+                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && IsColorColumn)
+                    {
+                        menuSelector_Settings.moveDown_Color();
+                    }
+                   else  if (reading.Buttons.HasFlag(GamepadButtons.DPadRight) && IsColorColumn)
+                   {
+                        IsColorColumn = false;
+                   }
+                   else if (reading.Buttons.HasFlag(GamepadButtons.DPadLeft) && !IsColorColumn)
+                    {
+                         IsColorColumn = true;
+                    }
+                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !IsColorColumn)
+                    {
+                        menuSelector_Settings.moveUp_Music();
+                    }
+                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !IsColorColumn)
+                    {
+                        menuSelector_Settings.moveDown_Music();
+                    }
+
+                }
+                //Go to start menu from how to play menu
+                if (!startedAtStartPage && howToPlayDisplaying && reading.Buttons.HasFlag(GamepadButtons.A))
+                {
+                    howToPlayDisplaying = false;
+                    startPageDisplaying = true;
+                    menuSelector = new menuSelector();
+                }
+
+                //Go back to start menu from credits
+                if (!startedAtStartPage && credits && reading.Buttons.HasFlag(GamepadButtons.A))
+                {
+                    credits = false;
+                    startPageDisplaying = true;
+                    menuSelector = new menuSelector();
+                }
+
+                //Go back to start menu from settings page
+                if (!startedAtStartPage && settingsPageDisplaying && reading.Buttons.HasFlag(GamepadButtons.A))
+                {
+                    if (menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
+                    {
+                        currentColor = Colors.DarkOrange;
+                    }
+                    else if (menuSelector_Settings.selection_color == ColorSelection.Cyan)
+                    {
+                        currentColor = Colors.Cyan;
+                    }
+                    else if (menuSelector_Settings.selection_color == ColorSelection.Green)
+                    {
+                        currentColor = Colors.Green;
+                    }
+                    else if (menuSelector_Settings.selection_color == ColorSelection.HotPink)
+                    {
+                        currentColor = Colors.HotPink;
+                    }
+                    snake.resetGame(currentColor);
+
+
+                    // Menu
+
+                    if (menuSelector_Settings.selection_music == MusicSelection.Song1)
+                    {
+                        changeToDuckTales = true;
+
+
+                    }
+                    else if (menuSelector_Settings.selection_music == MusicSelection.Song2)
+                    {
+                        // One more line
+                        changeToOneMoreLine = true;
+
+
+                    }
+                    else if (menuSelector_Settings.selection_music == MusicSelection.Song3)
+                    {
+                        // GTO theme
+                        // source   https://www.youtube.com/watch?v=Uc6vF1PWdFY 
+                        changeToGTO = true;
+
+
+                    }
+                    settingsPageDisplaying = false;
+                    startPageDisplaying = true;
+                    menuSelector = new menuSelector();
+                }
+
+                //From high score menu to start menu
+                if (highScoreMenu && reading.Buttons.HasFlag(GamepadButtons.A))
+                {
+                    highScoreMenu = false;
+                    startPageDisplaying = true;
                 }
             }
         }

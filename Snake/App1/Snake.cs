@@ -1,4 +1,5 @@
 ﻿using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,739 +17,946 @@ using Windows.UI.Xaml.Shapes;
 
 namespace App1
 {
-    enum direction { R, L, U, D};
-    public enum startPageSelection { Play, Settings, HowToPlay, Credits };
-    public enum ColorSelection { DarkOrange, Green, Cyan, HotPink };
-    public enum MusicSelection {Song1, Song2, Song3 };
 
-    //Blocks that the snake hits to grow
-    class Apple
-    {
-        public int x;
-        public int y;
-        public int l;
-        public Color appleColor;
+     public struct PlayerScores
+     {
+          public int score;
+          public string name;
+     }
 
-        public Apple(Color color)
-        {
-            //Give apple random x and y
-            Random RNG = new Random();
-            x = RNG.Next(40, 360);
-            y = RNG.Next(40, 360);
-            l = 20;
-            appleColor = color;
-        }
+     static class Score
+     {
+          public static int playerScore;
+     }
+     enum direction { R, L, U, D };
+     public enum startPageSelection { Play, Settings, HowToPlay, Credits };
+     public enum ColorSelection { DarkOrange, Green, Cyan, HotPink };
+     public enum MusicSelection { Song1, Song2, Song3 };
+     public enum NameSelection { A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z };
+     //Blocks that the snake hits to grow
+     class Apple
+     {
+          public int x;
+          public int y;
+          public int l;
+          public Color appleColor;
 
-        public bool collides(int hx, int hy, int hl)
-        {
-            //Returns true if one of the four corners of the apple is inside of the snake head
-            return ((x + l) >= hx && (x + l) <= (hx + hl)) && ((y + l) >= hy && (y + l) <= (hy + hl)) ||
-                   ((x >= hx && x <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
-                   (((x + l) >= hx && (x + l) <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
-                   ((x >= hx && x <= (hx + hl)) && ((y + l) >= hy && (y + l) <= (hy + hl)));
-        }
+          public Apple(Color color)
+          {
+               //Give apple random x and y
+               Random RNG = new Random();
+               x = RNG.Next(40, 360);
+               y = RNG.Next(40, 360);
+               l = 20;
+               appleColor = color;
+          }
 
-        public void draw(CanvasDrawingSession canvas)
-        {
-            //Draw apple
-            Rect rectForApple = new Rect();
-            rectForApple.X = x;
-            rectForApple.Y = y;
-            rectForApple.Width = l;
-            rectForApple.Height = l;
-            canvas.DrawRectangle(rectForApple, appleColor);
-            canvas.FillRectangle(rectForApple, appleColor);
-        }
-    }
+          public bool collides(int hx, int hy, int hl)
+          {
+               //Returns true if one of the four corners of the apple is inside of the snake head
+               return ((x + l) >= hx && (x + l) <= (hx + hl)) && ((y + l) >= hy && (y + l) <= (hy + hl)) ||
+                      ((x >= hx && x <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
+                      (((x + l) >= hx && (x + l) <= (hx + hl)) && (y >= hy && y <= (hy + hl))) ||
+                      ((x >= hx && x <= (hx + hl)) && ((y + l) >= hy && (y + l) <= (hy + hl)));
+          }
 
-    class Snake
-    {
-        public Head snakeHead;
-        public Apple apple;
-        public List<BodySegment> bodySegments;
-        public List<Cover> covers;
-        public Color foregroundColor;
-        public Color backgroundColor;
-        public bool growSnake;
-        private MediaPlayer biteSoundEffect;
-        private MediaPlayer yahooSoundEffect;
-        public int playerScore;
+          public void draw(CanvasDrawingSession canvas)
+          {
+               //Draw apple
+               Rect rectForApple = new Rect();
+               rectForApple.X = x;
+               rectForApple.Y = y;
+               rectForApple.Width = l;
+               rectForApple.Height = l;
+               canvas.DrawRectangle(rectForApple, appleColor);
+               canvas.FillRectangle(rectForApple, appleColor);
+          }
+     }
 
-        public Snake(Color foregroundColor, Color backgroundColor)
-        {
-            snakeHead = new Head(foregroundColor);
-            apple = new Apple(foregroundColor);
-            bodySegments = new List<BodySegment>();
-            covers = new List<Cover>();
-            this.foregroundColor = foregroundColor;
-            this.backgroundColor = backgroundColor;
-            growSnake = false;
-            playerScore = 0;
+     class Snake
+     {
+          public Head snakeHead;
+          public Apple apple;
+          public List<BodySegment> bodySegments;
+          public List<Cover> covers;
+          public Color foregroundColor;
+          public Color backgroundColor;
+          public bool growSnake;
+          private MediaPlayer biteSoundEffect;
+          private MediaPlayer yahooSoundEffect;
+          
 
-            //Stop apple from spawning on snake or right in front of snake
-            while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
-            {
-                apple = new Apple(foregroundColor);
-            }
+          public Snake(Color foregroundColor, Color backgroundColor)
+          {
+               snakeHead = new Head(foregroundColor);
+               apple = new Apple(foregroundColor);
+               bodySegments = new List<BodySegment>();
+               covers = new List<Cover>();
+               this.foregroundColor = foregroundColor;
+               this.backgroundColor = backgroundColor;
+               growSnake = false;
+               Score.playerScore = 0;
 
-            //Set up bite sound effect
-            biteSoundEffect = new MediaPlayer();
-            biteSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/chomp_sound_effect.wav"));
-
-            //Set up yipee sound effect that never plays
-            yahooSoundEffect = new MediaPlayer();
-            yahooSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_yahoo.wav"));
-
-
-            //Initialize snake to have six body segments.
-            bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (4 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (5 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-        }
-
-        public void resetGame(Color newColor)
-        {
-            foregroundColor = newColor;
-            snakeHead = new Head(foregroundColor);
-            apple = new Apple(foregroundColor);
-            bodySegments = new List<BodySegment>();
-            covers = new List<Cover>();
-            playerScore = 0;
-
-            //Stop apple from spawning on snake or right in front of snake
-            while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
-            {
-                apple = new Apple(foregroundColor);
-            }
-
-            //Initialize snake to have six body segments.
-            bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (4 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (5 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-            bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
-        }
-
-        public void updateGame()
-        {
-            //Update snake
-            snakeHead.update();
-
-            if (appleCollidesWithSnakeHead())
-            {
-                //When the snake head collides with an apple
-                while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
-                {
+               //Stop apple from spawning on snake or right in front of snake
+               while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+               {
                     apple = new Apple(foregroundColor);
-                    growSnake = true;
-                }
-            }
+               }
 
-            //Snake grows if player just hit an apple
-            if (growSnake)
-            {
-                biteSoundEffect.Play();
-                lengthenSnake();
-                growSnake = false;
-                ++playerScore;
-            }
+               //Set up bite sound effect
+               biteSoundEffect = new MediaPlayer();
+               biteSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/chomp_sound_effect.wav"));
+
+               //Set up yipee sound effect that never plays
+               yahooSoundEffect = new MediaPlayer();
+               yahooSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_yahoo.wav"));
 
 
-            //If a cover collides with the last body segment, stop drawing it.
-            BodySegment lastBodySegment = bodySegments[bodySegments.Count() - 1];
+               //Initialize snake to have six body segments.
+               bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (4 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (5 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+          }
+
+          public void resetGame(Color newColor)
+          {
+               foregroundColor = newColor;
+               snakeHead = new Head(foregroundColor);
+               apple = new Apple(foregroundColor);
+               bodySegments = new List<BodySegment>();
+               covers = new List<Cover>();
+               
+
+               //Stop apple from spawning on snake or right in front of snake
+               while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+               {
+                    apple = new Apple(foregroundColor);
+               }
+
+               //Initialize snake to have six body segments.
+               bodySegments.Add(new BodySegment(snakeHead.x - snakeHead.l, snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (2 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (3 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (4 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (5 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+               bodySegments.Add(new BodySegment(snakeHead.x - (6 * snakeHead.l), snakeHead.y, snakeHead.l, foregroundColor, direction.R));
+          }
+
+          public void updateGame()
+          {
+               //Update snake
+               snakeHead.update();
+
+               if (appleCollidesWithSnakeHead())
+               {
+                    //When the snake head collides with an apple
+                    while (appleCollidesWithSnakeHead() || appleCollidesWithBodyOfSnake() || appleIsToCloseToSnakeHead())
+                    {
+                         apple = new Apple(foregroundColor);
+                         growSnake = true;
+                    }
+               }
+
+               //Snake grows if player just hit an apple
+               if (growSnake)
+               {
+                    biteSoundEffect.Play();
+                    lengthenSnake();
+                    growSnake = false;
+                    Score.playerScore++;
+               }
 
 
-            for (int i = 0; i < covers.Count; ++i)
-            {
-                 if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
-                 {
-                     covers.RemoveAt(i);
-                 }
-            }
+               //If a cover collides with the last body segment, stop drawing it.
+               BodySegment lastBodySegment = bodySegments[bodySegments.Count() - 1];
 
-            //Update all the body segments
-            for (int i = 0; i < bodySegments.Count; ++i)
-            {
-                bodySegments[i].update();
-            }
-        }
-            
-        public void drawGame(CanvasDrawingSession canvas)
-        {
-            //Draw the snake head and apple
-            snakeHead.draw(canvas);
-            apple.draw(canvas);
 
-            //Draw all the body segments
-            for (int i = 0; i < bodySegments.Count; ++i)
-            {
-                bodySegments[i].draw(canvas);
-            }
+               for (int i = 0; i < covers.Count; ++i)
+               {
+                    if (covers[i].collides(lastBodySegment.x, lastBodySegment.y))
+                    {
+                         covers.RemoveAt(i);
+                    }
+               }
 
-            //Draw all the covers
-            for (int i = 0; i < covers.Count; ++i)
-            {
-                covers[i].draw(canvas);
-            }
-        }
+               //Update all the body segments
+               for (int i = 0; i < bodySegments.Count; ++i)
+               {
+                    bodySegments[i].update();
+               }
+          }
 
-        //Description: Determines if the apple is colliding with any of the body segment
-        private bool appleCollidesWithBodyOfSnake()
-        {
-            foreach(BodySegment bs in bodySegments)
-            {
-                if (apple.collides(bs.x, bs.y, bs.l))
-                {
-                    return true;
-                }
-            }
+          public void drawGame(CanvasDrawingSession canvas)
+          {
+               //Draw the snake head and apple
+               snakeHead.draw(canvas);
+               apple.draw(canvas);
 
-            foreach (Cover c in covers)
-            {
-                if (apple.collides(c.X, c.Y, c.L))
-                {
-                    //This sound effect serves abosolutely no purpose to the user.
-                    //I put it here so I know my code is working, i.e., the apple is not
-                    //spawning on top of any of the covers. This is a rare occurence so this
-                    //sound effect so almost never go off.
-                    yahooSoundEffect.Play();
-                    return true;
-                }
-            }
+               //Draw all the body segments
+               for (int i = 0; i < bodySegments.Count; ++i)
+               {
+                    bodySegments[i].draw(canvas);
+               }
 
-            return false;
-        }
+               //Draw all the covers
+               for (int i = 0; i < covers.Count; ++i)
+               {
+                    covers[i].draw(canvas);
+               }
+          }
 
-        private bool appleCollidesWithSnakeHead()
-        {
-            return apple.collides(snakeHead.x, snakeHead.y, snakeHead.l);
-        }
+          //Description: Determines if the apple is colliding with any of the body segment
+          private bool appleCollidesWithBodyOfSnake()
+          {
+               foreach (BodySegment bs in bodySegments)
+               {
+                    if (apple.collides(bs.x, bs.y, bs.l))
+                    {
+                         return true;
+                    }
+               }
 
-        //Stop apple from spawing too close to snake head. This ensures sound effect plays correctly.
-        //Simple use of pythagerean theorem.
-        private bool appleIsToCloseToSnakeHead()
-        {
-            return ((Math.Pow((apple.x - snakeHead.x), 2.0) + Math.Pow((apple.y - snakeHead.y), 2.0)) < 14400);
-        }
+               foreach (Cover c in covers)
+               {
+                    if (apple.collides(c.X, c.Y, c.L))
+                    {
+                         //This sound effect serves abosolutely no purpose to the user.
+                         //I put it here so I know my code is working, i.e., the apple is not
+                         //spawning on top of any of the covers. This is a rare occurence so this
+                         //sound effect so almost never go off.
+                         yahooSoundEffect.Play();
+                         return true;
+                    }
+               }
 
-        private void lengthenSnake()
-        {
-            //Make deep copy of end body segment
-            BodySegment endBodySegment = bodySegments[bodySegments.Count - 1];
-            BodySegment newEndBodySegment = endBodySegment.deepCopy();
+               return false;
+          }
 
-            //Modify deep copy's coordinates and distance till next turn
-            if (endBodySegment.goingUp)
-            {
-                newEndBodySegment.y += 20;
-            }
+          private bool appleCollidesWithSnakeHead()
+          {
+               return apple.collides(snakeHead.x, snakeHead.y, snakeHead.l);
+          }
 
-            else if (endBodySegment.goingDown)
-            {
-                newEndBodySegment.y -= 20;
-                
-            }
+          //Stop apple from spawing too close to snake head. This ensures sound effect plays correctly.
+          //Simple use of pythagerean theorem.
+          private bool appleIsToCloseToSnakeHead()
+          {
+               return ((Math.Pow((apple.x - snakeHead.x), 2.0) + Math.Pow((apple.y - snakeHead.y), 2.0)) < 14400);
+          }
 
-            else if (endBodySegment.goingLeft)
-            {
-                newEndBodySegment.x += 20;
-            }
+          private void lengthenSnake()
+          {
+               //Make deep copy of end body segment
+               BodySegment endBodySegment = bodySegments[bodySegments.Count - 1];
+               BodySegment newEndBodySegment = endBodySegment.deepCopy();
 
-            else if (endBodySegment.goingRight)
-            {
-                newEndBodySegment.x -= 20;
-            }
+               //Modify deep copy's coordinates and distance till next turn
+               if (endBodySegment.goingUp)
+               {
+                    newEndBodySegment.y += 20;
+               }
 
-            //Add new body segment to list of body segments if snake is not lined up perfectly
-            if (endBodySegment.distancesTillTurns.Count != 0)
-            {
-                newEndBodySegment.distancesTillTurns[0] += 20;
-            }
+               else if (endBodySegment.goingDown)
+               {
+                    newEndBodySegment.y -= 20;
 
-            bodySegments.Add(newEndBodySegment);
-        }
+               }
 
-        public bool playerRanIntoThemself()
-        {
-            //Start at second body segment b/c first will overlap with head when it turns
-            //and the head can't collide with the first body segment anyway
-            for (int i = 1; i < bodySegments.Count; ++i)
-            {
-                if (bodySegments[i].collides(snakeHead.x, snakeHead.y, snakeHead.l))
-                {
-                    return true;
-                }
-            }
+               else if (endBodySegment.goingLeft)
+               {
+                    newEndBodySegment.x += 20;
+               }
 
-            return false;
-        }
-    }
+               else if (endBodySegment.goingRight)
+               {
+                    newEndBodySegment.x -= 20;
+               }
 
-    class Head
-    {
-        public int x;
-        public int y;
-        public int l;
-        public bool goingUp;
-        public bool goingDown;
-        public bool goingRight;
-        public bool goingLeft;
-        public int distanceSinceLastTurn;
-        public Color headColor;
+               //Add new body segment to list of body segments if snake is not lined up perfectly
+               if (endBodySegment.distancesTillTurns.Count != 0)
+               {
+                    newEndBodySegment.distancesTillTurns[0] += 20;
+               }
 
-        public Head(Color color)
-        {
-            x = 200;
-            y = 200;
-            l = 20;
-            headColor = color;
+               bodySegments.Add(newEndBodySegment);
+          }
 
-            //There's a reason this is 120. Don't change the value.
-            distanceSinceLastTurn = 120;
+          public bool playerRanIntoThemself()
+          {
+               //Start at second body segment b/c first will overlap with head when it turns
+               //and the head can't collide with the first body segment anyway
+               for (int i = 1; i < bodySegments.Count; ++i)
+               {
+                    if (bodySegments[i].collides(snakeHead.x, snakeHead.y, snakeHead.l))
+                    {
+                         return true;
+                    }
+               }
 
-            //Start off by moving right
-            goingUp = false;
-            goingDown = false;
-            goingRight = true;
-            goingLeft = false;
-        }
+               return false;
+          }
+     }
 
-        public void update()
-        {
-            if (goingUp)
-            {
-                y -= 4;
-            }
+     class Head
+     {
+          public int x;
+          public int y;
+          public int l;
+          public bool goingUp;
+          public bool goingDown;
+          public bool goingRight;
+          public bool goingLeft;
+          public int distanceSinceLastTurn;
+          public Color headColor;
 
-            else if(goingDown)
-            {
-                y += 4;
-            }
+          public Head(Color color)
+          {
+               x = 200;
+               y = 200;
+               l = 20;
+               headColor = color;
 
-            else if (goingRight)
-            {
-                x += 4;
-            }
+               //There's a reason this is 120. Don't change the value.
+               distanceSinceLastTurn = 120;
 
-            else if (goingLeft)
-            {
-                x -= 4;
-            }
+               //Start off by moving right
+               goingUp = false;
+               goingDown = false;
+               goingRight = true;
+               goingLeft = false;
+          }
 
-            distanceSinceLastTurn += 4;
-        }
+          public void update()
+          {
+               if (goingUp)
+               {
+                    y -= 4;
+               }
 
-        public void draw(CanvasDrawingSession canvas)
-        {
-            //Draw snake head
-            Rect rectForSnakeHead = new Rect();
-            rectForSnakeHead.X = x;
-            rectForSnakeHead.Y = y;
-            rectForSnakeHead.Width = l;
-            rectForSnakeHead.Height = l;
-            canvas.DrawRectangle(rectForSnakeHead, headColor);
-            canvas.FillRectangle(rectForSnakeHead, headColor);
-        }
-    }
+               else if (goingDown)
+               {
+                    y += 4;
+               }
 
-    class BodySegment
-    {
-        public int x;
-        public int y;
-        public int l;
-        public bool goingUp;
-        public bool goingDown;
-        public bool goingRight;
-        public bool goingLeft;
-        public Color bodySegmentColor;
+               else if (goingRight)
+               {
+                    x += 4;
+               }
 
-        //Keep track of distances that the body segment has to travel and then turn at
-        public List<int> distancesTillTurns;
+               else if (goingLeft)
+               {
+                    x -= 4;
+               }
 
-        //Keep track of directions that body segment has to turn
-        public Queue<direction> waysToTurn;
+               distanceSinceLastTurn += 4;
+          }
 
-        public BodySegment(int sx, int sy, int sl, Color color, direction dir)
-        {
-            x = sx;
-            y = sy;
-            l = sl;
+          public void draw(CanvasDrawingSession canvas)
+          {
+               //Draw snake head
+               Rect rectForSnakeHead = new Rect();
+               rectForSnakeHead.X = x;
+               rectForSnakeHead.Y = y;
+               rectForSnakeHead.Width = l;
+               rectForSnakeHead.Height = l;
+               canvas.DrawRectangle(rectForSnakeHead, headColor);
+               canvas.FillRectangle(rectForSnakeHead, headColor);
+          }
+     }
 
-            if (dir == direction.R)
-            {
-                goingRight = true;
-                goingLeft = false;
-                goingUp = false;
-                goingDown = false;
-            }
+     class BodySegment
+     {
+          public int x;
+          public int y;
+          public int l;
+          public bool goingUp;
+          public bool goingDown;
+          public bool goingRight;
+          public bool goingLeft;
+          public Color bodySegmentColor;
 
-            else if (dir == direction.L)
-            {
-                goingRight = false;
-                goingLeft = true;
-                goingUp = false;
-                goingDown = false;
-            }
+          //Keep track of distances that the body segment has to travel and then turn at
+          public List<int> distancesTillTurns;
 
-            else if (dir == direction.U)
-            {
-                goingRight = false;
-                goingLeft = false;
-                goingUp = true;
-                goingDown = false;
-            }
+          //Keep track of directions that body segment has to turn
+          public Queue<direction> waysToTurn;
 
-            else if (dir == direction.D)
-            {
-                goingRight = false;
-                goingLeft = false;
-                goingUp = false;
-                goingDown = true;
-            }
+          public BodySegment(int sx, int sy, int sl, Color color, direction dir)
+          {
+               x = sx;
+               y = sy;
+               l = sl;
 
-            bodySegmentColor = color;
-            distancesTillTurns = new List<int>();
-            waysToTurn = new Queue<direction>();
-        }
-
-        //Description: Returns deep copy of calling body segment.
-        public BodySegment deepCopy()
-        {
-            //Determine which way calling body segment is going and then tell copy to move same way
-            direction dir = direction.L;
-
-            if (goingUp)
-            {
-                dir = direction.U;
-            }
-
-            else if (goingDown)
-            {
-                dir = direction.D;
-            }
-
-            else if (goingLeft)
-            {
-                dir = direction.L;
-            }
-
-            else if (goingRight)
-            {
-                dir = direction.R;
-            }
-
-            BodySegment deepCopyOfBodySegment = new BodySegment(x, y, l, bodySegmentColor, dir);
-
-            if (distancesTillTurns.Count != 0)
-            {
-                for (int i = 0; i < distancesTillTurns.Count; i++)
-                {
-                    deepCopyOfBodySegment.distancesTillTurns.Add(distancesTillTurns[i]);
-                }
-            }
-
-            if (waysToTurn.Count != 0)
-            {
-                foreach(direction d in waysToTurn)
-                {
-                    deepCopyOfBodySegment.waysToTurn.Enqueue(d);
-                }
-            }
-
-            return deepCopyOfBodySegment;
-        }
-
-        public bool collides(int hx, int hy, int hl)
-        {
-            //Returns true if one of the four corners of the body segment is inside of the snake head
-            return ((x + l) > hx && (x + l) < (hx + hl)) && ((y + l) > hy && (y + l) < (hy + hl)) ||
-                   ((x > hx && x < (hx + hl)) && (y > hy && y < (hy + hl))) ||
-                   (((x + l) > hx && (x + l) < (hx + hl)) && (y > hy && y < (hy + hl))) ||
-                   ((x > hx && x < (hx + hl)) && ((y + l) > hy && (y + l) < (hy + hl)));
-        }
-
-        public void update()
-        {
-            if (goingUp)
-            {
-                y -= 4;
-            }
-
-            else if (goingDown)
-            {
-                y += 4;
-            }
-
-            else if (goingRight)
-            {
-                x += 4;
-            }
-
-            else if (goingLeft)
-            {
-                x -= 4;
-            }
-
-            //Don't go any further if the body segment is lined up with the head
-            if (distancesTillTurns.Count() == 0)
-            {
-                return;
-            }
-
-            //Subtract 4 from distance body segment is currently traveling
-            distancesTillTurns[0] -= 4;
-
-            //If it's time to turn
-            if (distancesTillTurns[0] == 0)
-            {
-                //Get rid of zero. Will start subtracting from next distance.
-                distancesTillTurns.Remove(0);
-
-                //Get direction body segment is turning.
-                direction newDirection = waysToTurn.Dequeue();
-
-                if (newDirection == direction.U)
-                {
-                    goingRight = false;
-                    goingLeft = false;
-                    goingUp = true;
-                    goingDown = false;
-                }
-
-                else if (newDirection == direction.D)
-                {
-                    goingRight = false;
-                    goingLeft = false;
-                    goingUp = false;
-                    goingDown = true;
-                }
-
-                else if (newDirection == direction.L)
-                {
-                    goingRight = false;
-                    goingLeft = true;
-                    goingUp = false;
-                    goingDown = false;
-                }
-
-                else if (newDirection == direction.R)
-                {
+               if (dir == direction.R)
+               {
                     goingRight = true;
                     goingLeft = false;
                     goingUp = false;
                     goingDown = false;
-                }
-            }
-        }
+               }
 
-        public void draw(CanvasDrawingSession canvas)
-        {
-            //Draw body segment
-            Rect rectForBodySegment = new Rect();
-            rectForBodySegment.X = x;
-            rectForBodySegment.Y = y;
-            rectForBodySegment.Width = l;
-            rectForBodySegment.Height = l;
-            canvas.DrawRectangle(rectForBodySegment, bodySegmentColor);
-            canvas.FillRectangle(rectForBodySegment, bodySegmentColor);
-        }
-    }
+               else if (dir == direction.L)
+               {
+                    goingRight = false;
+                    goingLeft = true;
+                    goingUp = false;
+                    goingDown = false;
+               }
 
-    class Cover
-    {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public int L { get; private set; }
-        public Color coverColor;
+               else if (dir == direction.U)
+               {
+                    goingRight = false;
+                    goingLeft = false;
+                    goingUp = true;
+                    goingDown = false;
+               }
 
-        public Cover(int x, int y, int l, Color color)
-        {
-            X = x;
-            Y = y;
-            L = l;
-            coverColor = color;
-        }
+               else if (dir == direction.D)
+               {
+                    goingRight = false;
+                    goingLeft = false;
+                    goingUp = false;
+                    goingDown = true;
+               }
 
-        public void draw(CanvasDrawingSession canvas)
-        {
-            //Draw cover
-            Rect recForCover = new Rect();
-            recForCover.X = X;
-            recForCover.Y = Y;
-            recForCover.Width = L;
-            recForCover.Height = L;
-            canvas.DrawRectangle(recForCover, coverColor);
-            canvas.FillRectangle(recForCover, coverColor);
-        }
+               bodySegmentColor = color;
+               distancesTillTurns = new List<int>();
+               waysToTurn = new Queue<direction>();
+          }
 
-        public bool collides (int x, int y)
-        {
-            //Returns true is snake head is directly on top of cover
-            return X == x && Y == y;
-        }
-    }
+          //Description: Returns deep copy of calling body segment.
+          public BodySegment deepCopy()
+          {
+               //Determine which way calling body segment is going and then tell copy to move same way
+               direction dir = direction.L;
 
-    public class menuSelector_Settings
-    {
-        private bool atTop_Color;
-        private bool atBottom_Color;
+               if (goingUp)
+               {
+                    dir = direction.U;
+               }
 
-        private bool atBottom_Music;
-        private bool atTop_Music;
+               else if (goingDown)
+               {
+                    dir = direction.D;
+               }
 
-        private Rect selector_color;
-        private Rect selector_music;
-        public ColorSelection selection_color;
-        public MusicSelection selection_music;
-        public menuSelector_Settings()
-        {
-            atTop_Color = true;
-            atBottom_Color = false;
+               else if (goingLeft)
+               {
+                    dir = direction.L;
+               }
 
-            atTop_Music = true;
-            atBottom_Music = false;
+               else if (goingRight)
+               {
+                    dir = direction.R;
+               }
 
-            selector_color = new Rect();
-            selector_color.X = 25;
-            selector_color.Y = 105;
-            selector_color.Height = 15;
-            selector_color.Width = 15;
+               BodySegment deepCopyOfBodySegment = new BodySegment(x, y, l, bodySegmentColor, dir);
 
-            selector_music = new Rect();
-            selector_music.X = 345;
-            selector_music.Y = 105;
-            selector_music.Height = 15;
-            selector_music.Width = 15;
+               if (distancesTillTurns.Count != 0)
+               {
+                    for (int i = 0; i < distancesTillTurns.Count; i++)
+                    {
+                         deepCopyOfBodySegment.distancesTillTurns.Add(distancesTillTurns[i]);
+                    }
+               }
 
-            selection_color = ColorSelection.DarkOrange;
-            selection_music = MusicSelection.Song1;
-        }
-        public void moveUp_Color()
-        {
-            if (!atTop_Color)
-            {
-                selector_color.Y -= 56;
-                atBottom_Color = false;
-                --selection_color;
+               if (waysToTurn.Count != 0)
+               {
+                    foreach (direction d in waysToTurn)
+                    {
+                         deepCopyOfBodySegment.waysToTurn.Enqueue(d);
+                    }
+               }
 
-                if (selector_color.Y == 105)
-                {
-                    atTop_Color = true;
-                }
-            }
-        }
-        public void moveDown_Color()
-        {
-            if (!atBottom_Color)
-            {
-                selector_color.Y += 56;
-                atTop_Color = false;
-                ++selection_color;
+               return deepCopyOfBodySegment;
+          }
 
-                if (selector_color.Y == 273)
-                {
-                    atBottom_Color = true;
-                }
-            }
-        }
-        public void moveUp_Music()
-        {
-            if (!atTop_Music)
-            {
-                selector_music.Y -= 56;
-                atBottom_Music = false;
-                --selection_music;
+          public bool collides(int hx, int hy, int hl)
+          {
+               //Returns true if one of the four corners of the body segment is inside of the snake head
+               return ((x + l) > hx && (x + l) < (hx + hl)) && ((y + l) > hy && (y + l) < (hy + hl)) ||
+                      ((x > hx && x < (hx + hl)) && (y > hy && y < (hy + hl))) ||
+                      (((x + l) > hx && (x + l) < (hx + hl)) && (y > hy && y < (hy + hl))) ||
+                      ((x > hx && x < (hx + hl)) && ((y + l) > hy && (y + l) < (hy + hl)));
+          }
 
-                if (selector_music.Y == 105)
-                {
-                    atTop_Music = true;
-                }
-            }
-        }
-        public void moveDown_Music()
-        {
-            if (!atBottom_Music)
-            {
-                selector_music.Y += 56;
-                atTop_Music = false;
-                ++selection_music;
+          public void update()
+          {
+               if (goingUp)
+               {
+                    y -= 4;
+               }
 
-                if (selector_music.Y == 217)
-                {
-                    atBottom_Music = true;
-                }
-            }
-        }
-        public void draw(CanvasDrawingSession canvas)
-        {   // color selector
-            canvas.DrawRectangle(selector_color, Colors.White);
-            canvas.FillRectangle(selector_color, Colors.White);
-            // song selector
-            canvas.DrawRectangle(selector_music, Colors.White);
-            canvas.FillRectangle(selector_music, Colors.White);
-        }
-    }
-    public class menuSelector
-    {
-        private bool atTop;
-        private bool atBottom;
-        private Rect selector;
-        public startPageSelection selection;
-     
+               else if (goingDown)
+               {
+                    y += 4;
+               }
 
-        public menuSelector()
-        {
-            atTop = true;
-            atBottom = false;
+               else if (goingRight)
+               {
+                    x += 4;
+               }
 
-            selector = new Rect();
-            selector.X = 25;
-            selector.Y = 210;
-            selector.Height = 20;
-            selector.Width = 20;
+               else if (goingLeft)
+               {
+                    x -= 4;
+               }
 
-            selection = startPageSelection.Play;
-        }
+               //Don't go any further if the body segment is lined up with the head
+               if (distancesTillTurns.Count() == 0)
+               {
+                    return;
+               }
 
-        public void moveUp()
-        {
-            if (!atTop)
-            {
-                selector.Y -= 50;
-                atBottom = false;
-                --selection;
+               //Subtract 4 from distance body segment is currently traveling
+               distancesTillTurns[0] -= 4;
 
-                if (selector.Y == 210)
-                {
-                    atTop = true;
-                }
-            }
-        }
+               //If it's time to turn
+               if (distancesTillTurns[0] == 0)
+               {
+                    //Get rid of zero. Will start subtracting from next distance.
+                    distancesTillTurns.Remove(0);
 
-        public void moveDown()
-        {
-            if (!atBottom)
-            {
-                selector.Y += 50;
-                atTop = false;
-                ++selection;
+                    //Get direction body segment is turning.
+                    direction newDirection = waysToTurn.Dequeue();
 
-                if (selector.Y == 360)
-                {
-                    atBottom = true;
-                }
-            }
-        }
-     
+                    if (newDirection == direction.U)
+                    {
+                         goingRight = false;
+                         goingLeft = false;
+                         goingUp = true;
+                         goingDown = false;
+                    }
 
-        public void draw(CanvasDrawingSession canvas)
-        {
-            canvas.DrawRectangle(selector, Colors.White);
-            canvas.FillRectangle(selector, Colors.White);
-        }
-    }
+                    else if (newDirection == direction.D)
+                    {
+                         goingRight = false;
+                         goingLeft = false;
+                         goingUp = false;
+                         goingDown = true;
+                    }
+
+                    else if (newDirection == direction.L)
+                    {
+                         goingRight = false;
+                         goingLeft = true;
+                         goingUp = false;
+                         goingDown = false;
+                    }
+
+                    else if (newDirection == direction.R)
+                    {
+                         goingRight = true;
+                         goingLeft = false;
+                         goingUp = false;
+                         goingDown = false;
+                    }
+               }
+          }
+
+          public void draw(CanvasDrawingSession canvas)
+          {
+               //Draw body segment
+               Rect rectForBodySegment = new Rect();
+               rectForBodySegment.X = x;
+               rectForBodySegment.Y = y;
+               rectForBodySegment.Width = l;
+               rectForBodySegment.Height = l;
+               canvas.DrawRectangle(rectForBodySegment, bodySegmentColor);
+               canvas.FillRectangle(rectForBodySegment, bodySegmentColor);
+          }
+     }
+
+     class Cover
+     {
+          public int X { get; private set; }
+          public int Y { get; private set; }
+          public int L { get; private set; }
+          public Color coverColor;
+
+          public Cover(int x, int y, int l, Color color)
+          {
+               X = x;
+               Y = y;
+               L = l;
+               coverColor = color;
+          }
+
+          public void draw(CanvasDrawingSession canvas)
+          {
+               //Draw cover
+               Rect recForCover = new Rect();
+               recForCover.X = X;
+               recForCover.Y = Y;
+               recForCover.Width = L;
+               recForCover.Height = L;
+               canvas.DrawRectangle(recForCover, coverColor);
+               canvas.FillRectangle(recForCover, coverColor);
+          }
+
+          public bool collides(int x, int y)
+          {
+               //Returns true is snake head is directly on top of cover
+               return X == x && Y == y;
+          }
+     }
+
+     public class menuSelector_Settings
+     {
+          private bool atTop_Color;
+          private bool atBottom_Color;
+
+          private bool atBottom_Music;
+          private bool atTop_Music;
+
+          private Rect selector_color;
+          private Rect selector_music;
+          public ColorSelection selection_color;
+          public MusicSelection selection_music;
+          public menuSelector_Settings()
+          {
+               atTop_Color = true;
+               atBottom_Color = false;
+
+               atTop_Music = true;
+               atBottom_Music = false;
+
+               selector_color = new Rect();
+               selector_color.X = 25;
+               selector_color.Y = 105;
+               selector_color.Height = 15;
+               selector_color.Width = 15;
+
+               selector_music = new Rect();
+               selector_music.X = 345;
+               selector_music.Y = 105;
+               selector_music.Height = 15;
+               selector_music.Width = 15;
+
+               selection_color = ColorSelection.DarkOrange;
+               selection_music = MusicSelection.Song1;
+          }
+          public void moveUp_Color()
+          {
+               if (!atTop_Color)
+               {
+                    selector_color.Y -= 56;
+                    atBottom_Color = false;
+                    --selection_color;
+
+                    if (selector_color.Y == 105)
+                    {
+                         atTop_Color = true;
+                    }
+               }
+          }
+          public void moveDown_Color()
+          {
+               if (!atBottom_Color)
+               {
+                    selector_color.Y += 56;
+                    atTop_Color = false;
+                    ++selection_color;
+
+                    if (selector_color.Y == 273)
+                    {
+                         atBottom_Color = true;
+                    }
+               }
+          }
+          public void moveUp_Music()
+          {
+               if (!atTop_Music)
+               {
+                    selector_music.Y -= 56;
+                    atBottom_Music = false;
+                    --selection_music;
+
+                    if (selector_music.Y == 105)
+                    {
+                         atTop_Music = true;
+                    }
+               }
+          }
+          public void moveDown_Music()
+          {
+               if (!atBottom_Music)
+               {
+                    selector_music.Y += 56;
+                    atTop_Music = false;
+                    ++selection_music;
+
+                    if (selector_music.Y == 217)
+                    {
+                         atBottom_Music = true;
+                    }
+               }
+          }
+          public void draw(CanvasDrawingSession canvas)
+          {   // color selector
+               canvas.DrawRectangle(selector_color, Colors.White);
+               canvas.FillRectangle(selector_color, Colors.White);
+               // song selector
+               canvas.DrawRectangle(selector_music, Colors.White);
+               canvas.FillRectangle(selector_music, Colors.White);
+          }
+     }
+
+     public class menuSelector_HighScore
+     {
+
+
+          public bool leftSelection;
+          public bool middleSelection;
+          public bool rightSelection;
+
+          public Rect leftInitial;
+          public Rect middleInitial;
+          public Rect rightInitial;
+          public Rect highScoreText;
+          public Rect firstRankText;
+          public Rect secondRankText;
+          public Rect thirdRankText;
+          public Rect fourthRankText;
+          public Rect fifthRankText;
+
+          public NameSelection firstName;
+          public NameSelection middleName;
+          public NameSelection lastName;
+          public string fullName;
+
+          //public int[,] scoresArray;
+          public List<PlayerScores> save = new List<PlayerScores>();
+
+
+          
+          public menuSelector_HighScore()
+          {
+               //scoresArray = new int[5, 2];
+               
+
+               leftSelection = true;         //currently cursor is on first initial
+               middleSelection = false;
+               rightSelection = false;
+
+               leftInitial = new Rect();          
+               leftInitial.X = 400;
+               leftInitial.Y = 50;
+               leftInitial.Width = 10;
+               leftInitial.Height = 50;
+
+               middleInitial = new Rect();
+               middleInitial.X = 420;
+               middleInitial.Y = 50;
+               middleInitial.Width = 10;
+               middleInitial.Height = 50;
+
+               rightInitial = new Rect();
+               rightInitial.X = 440;
+               rightInitial.Y = 50;
+               rightInitial.Width = 10;
+               rightInitial.Height = 50;
+
+               highScoreText = new Rect();
+               highScoreText.X = 175;
+               highScoreText.Y = 50;
+               highScoreText.Width = 150;
+               highScoreText.Height = 50;
+
+               firstRankText = new Rect();
+               firstRankText.X = 100;
+               firstRankText.Y = 150;
+               firstRankText.Width = 50;
+               firstRankText.Height = 50;
+
+               firstName = NameSelection.C;
+               middleName = NameSelection.I;
+               lastName = NameSelection.S;
+               
+          }
+          
+          public void saveScore()
+          {
+               fullName = firstName.ToString() + middleName.ToString() + lastName.ToString();
+               save.Sort();       //To be edited
+
+          }
+
+          //Source: https://stackoverflow.com/questions/4906725/largest-and-smallest-number-in-an-array
+          public void reGroup(List<int> scores, List<string> players)
+          {
+               
+
+
+               //int minint1 = tempArray[0, 0];
+               //int minint2 = tempArray[0, 1];
+               //int maxint1 = tempArray[0, 0];
+               //int maxint2 = tempArray[0, 1];
+               //for (int i = 0; i < 5; i++)
+               //{
+               //     if (tempArray[i,0] < minint1)
+               //     {
+               //          minint1 = tempArray[i, 0];
+               //          minint2 = tempArray[i, 1];
+               //     }
+               //     if (tempArray[i,0] > maxint1)
+               //     {
+               //          maxint1 = tempArray[i, 0];
+               //          maxint2 = tempArray[i, 1];
+               //     }
+               //}
+
+
+               //foreach (int value in tempArray)
+               //{
+               //     if (value < minint) minint = value;
+               //     if (value > maxint) maxint = value;
+               //}
+          }
+
+          public void draw(CanvasDrawingSession canvas)
+          {
+               CanvasTextFormat nameFormat = new CanvasTextFormat()
+               {
+                    FontFamily = "Courier New",
+                    FontSize = 25
+               };
+
+
+               
+          }
+
+          public void moveUp()
+          {
+               if (leftSelection)
+               {
+                    firstName++;
+               }
+               else if (middleSelection)
+               {
+                    middleName++;
+               }
+               else
+               {
+                    lastName++;
+               }
+          }
+
+          public void moveDown()
+          {
+               if (leftSelection)
+               {
+                    firstName--;
+               }
+               else if (middleSelection)
+               {
+                    middleName--;
+               }
+               else
+               {
+                    lastName--;
+               }
+          }
+
+          public void moveLeft()
+          {
+               if (leftSelection)
+               {
+                    leftSelection = false;
+                    rightSelection = true;
+               }
+               else if (middleSelection)
+               {
+                    leftSelection = true;
+                    middleSelection = false;
+               }
+               else
+               {
+                    middleSelection = true;
+                    rightSelection = false;
+               }
+          }
+
+          public void moveRight()
+          {
+               if (leftSelection)
+               {
+                    leftSelection = false;
+                    middleSelection = true;
+               }
+               else if (middleSelection)
+               {
+                    rightSelection = true;
+                    middleSelection = false;
+               }
+               else
+               {
+                    leftSelection = true;
+                    rightSelection = false;
+               }
+          }
+     }
+
+     public class menuSelector
+     {
+          private bool atTop;
+          private bool atBottom;
+          private Rect selector;
+          public startPageSelection selection;
+
+
+          public menuSelector()
+          {
+               atTop = true;
+               atBottom = false;
+
+               selector = new Rect();
+               selector.X = 25;
+               selector.Y = 210;
+               selector.Height = 20;
+               selector.Width = 20;
+
+               selection = startPageSelection.Play;
+          }
+
+          public void moveUp()
+          {
+               if (!atTop)
+               {
+                    selector.Y -= 50;
+                    atBottom = false;
+                    --selection;
+
+                    if (selector.Y == 210)
+                    {
+                         atTop = true;
+                    }
+               }
+          }
+
+          public void moveDown()
+          {
+               if (!atBottom)
+               {
+                    selector.Y += 50;
+                    atTop = false;
+                    ++selection;
+
+                    if (selector.Y == 360)
+                    {
+                         atBottom = true;
+                    }
+               }
+          }
+
+
+          public void draw(CanvasDrawingSession canvas)
+          {
+               canvas.DrawRectangle(selector, Colors.White);
+               canvas.FillRectangle(selector, Colors.White);
+          }
+     }
 }

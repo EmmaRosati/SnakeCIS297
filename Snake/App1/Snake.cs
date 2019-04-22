@@ -760,7 +760,7 @@ namespace App1
           {
                //scoresArray = new int[5, 2];
                //readData();
-               sample();
+               //sample();
 
 
 
@@ -912,15 +912,18 @@ namespace App1
                if (leftSelection)
                {
                     leftSelection = false;
+                    middleSelection = false;
                     rightSelection = true;
                }
                else if (middleSelection)
                {
                     leftSelection = true;
                     middleSelection = false;
+                    rightSelection = false;
                }
                else
                {
+                    leftSelection = false;
                     middleSelection = true;
                     rightSelection = false;
                }
@@ -932,15 +935,18 @@ namespace App1
                {
                     leftSelection = false;
                     middleSelection = true;
+                    rightSelection = false;
                }
                else if (middleSelection)
                {
+                    leftSelection = false;
                     rightSelection = true;
                     middleSelection = false;
                }
                else
                {
                     leftSelection = true;
+                    middleSelection = false;
                     rightSelection = false;
                }
           }

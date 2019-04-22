@@ -70,7 +70,6 @@ namespace App1
         
 
         private bool howToPlayDisplaying;
-        private bool highScoreMenu;
         private bool loading;
         private bool credits;
 
@@ -95,7 +94,6 @@ namespace App1
             settingsPageDisplaying = false;
             IsColorColumn = true;
             howToPlayDisplaying = false;
-            highScoreMenu = false;
             loading = true;
             credits = false;
             changeToDuckTales = false;
@@ -322,23 +320,6 @@ namespace App1
                                              "PRESS ENTER OR A TO GO TO START MENU", howToPlayRect, Colors.White, rectFormat);
             }
 
-            else if(highScoreMenu)
-            {
-                Rect HorriblyFormattedTextPleaseRemove = new Rect();
-                HorriblyFormattedTextPleaseRemove.X = 100;
-                HorriblyFormattedTextPleaseRemove.Y = 100;
-                HorriblyFormattedTextPleaseRemove.Width = 100;
-                HorriblyFormattedTextPleaseRemove.Height = 100;
-
-                CanvasTextFormat HorribleFormattingPleaseRemove = new CanvasTextFormat()
-                {
-                    FontFamily = "Arial",
-                    FontSize = 12
-                };
-
-                args.DrawingSession.DrawText("High score", HorriblyFormattedTextPleaseRemove, Colors.White, HorribleFormattingPleaseRemove);
-            }
-
             else if(loading)
             {
                 Rect locOfLoadText = new Rect();
@@ -440,7 +421,7 @@ namespace App1
                 {
                     gameOver = false;
                     snake.resetGame(currentColor);
-                    highScoreMenu = true;
+                    startPageDisplaying = true;
                     gameOverCounter = 0;
                 }
            }
@@ -458,12 +439,7 @@ namespace App1
            else if(howToPlayDisplaying)
            {
                 gameControllerLogic_StartMenu_SettingsMenu();
-            }
-
-           else if(highScoreMenu)
-           {
-                gameControllerLogic_StartMenu_SettingsMenu();
-            }
+           }
 
            else if(loading)
            {
@@ -479,7 +455,7 @@ namespace App1
            else if (credits)
            {
                 gameControllerLogic_StartMenu_SettingsMenu();
-            }
+           }
         }
 
         private void updateGame()
@@ -822,13 +798,6 @@ namespace App1
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();
             }
-
-            //From high score menu to start menu
-            if (highScoreMenu && e.VirtualKey == Windows.System.VirtualKey.Enter)
-            {
-                highScoreMenu = false;
-                startPageDisplaying = true;
-            }
         }
 
         //Makes Snake Turn when d-pad on controller is pressed
@@ -866,10 +835,9 @@ namespace App1
                     turningUp = true;
                     canTurn = false;
                 }
-
-
             }
         }
+
         private void gameControllerLogic_StartMenu_SettingsMenu()
         {
             bool startedAtStartPage = startPageDisplaying;
@@ -946,7 +914,7 @@ namespace App1
 
                 }
                 //Go to start menu from how to play menu
-                if (!startedAtStartPage && howToPlayDisplaying && reading.Buttons.HasFlag(GamepadButtons.A))
+                if (!startedAtStartPage && howToPlayDisplaying && reading.Buttons.HasFlag(GamepadButtons.B))
                 {
                     howToPlayDisplaying = false;
                     startPageDisplaying = true;
@@ -954,7 +922,7 @@ namespace App1
                 }
 
                 //Go back to start menu from credits
-                if (!startedAtStartPage && credits && reading.Buttons.HasFlag(GamepadButtons.A))
+                if (!startedAtStartPage && credits && reading.Buttons.HasFlag(GamepadButtons.B))
                 {
                     credits = false;
                     startPageDisplaying = true;
@@ -962,7 +930,7 @@ namespace App1
                 }
 
                 //Go back to start menu from settings page
-                if (!startedAtStartPage && settingsPageDisplaying && reading.Buttons.HasFlag(GamepadButtons.A))
+                if (!startedAtStartPage && settingsPageDisplaying && reading.Buttons.HasFlag(GamepadButtons.B))
                 {
                     if (menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
                     {
@@ -1009,13 +977,6 @@ namespace App1
                     settingsPageDisplaying = false;
                     startPageDisplaying = true;
                     menuSelector = new menuSelector();
-                }
-
-                //From high score menu to start menu
-                if (highScoreMenu && reading.Buttons.HasFlag(GamepadButtons.A))
-                {
-                    highScoreMenu = false;
-                    startPageDisplaying = true;
                 }
             }
         }

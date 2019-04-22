@@ -478,8 +478,8 @@ namespace App1
 
            else if (credits)
            {
-          
-           }
+                gameControllerLogic_StartMenu_SettingsMenu();
+            }
         }
 
         private void updateGame()

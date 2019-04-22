@@ -68,6 +68,8 @@ namespace App1
           private bool changeToOneMoreLine;
           private bool settingsPageDisplaying;
           private bool IsColorColumn; // For Color Column
+          private bool nameSaved;
+          private bool scoreSaved;
 
 
           private bool howToPlayDisplaying;
@@ -102,6 +104,8 @@ namespace App1
                changeToDuckTales = false;
                changeToOneMoreLine = false;
                changeToGTO = false;
+               nameSaved = false;
+               scoreSaved = false;
 
 
                /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
@@ -346,15 +350,37 @@ namespace App1
                          FontSize = 25
                     };
                     args.DrawingSession.DrawText(Score.playerScore.ToString(), menuSelector_HighScore.highScoreText, Colors.White, nameFormat);
-                    if (menuSelector_HighScore.save.Any())
+                    PlayerScores temp = new PlayerScores();
+                    temp.score = Score.playerScore;
+                    temp.name = menuSelector_HighScore.firstName.ToString() + menuSelector_HighScore.middleName.ToString() + menuSelector_HighScore.lastName.ToString();
+                    if (menuSelector_HighScore.save.Any() /*&& !menuSelector_HighScore.save.Contains(temp)*/)
                     {
-                         string tempString;
-                         int counter = 1;
+                         //string tempName = menuSelector_HighScore.firstName.ToString() + menuSelector_HighScore.middleName.ToString() + menuSelector_HighScore.lastName.ToString();
+                         string tempScoreString, tempNameString;
                          int length = menuSelector_HighScore.save.Count();
-                         tempString = menuSelector_HighScore.save[0].score.ToString();
-                         for (counter; )
-                         args.DrawingSession.DrawText(menuSelector_HighScore.save[0].score.ToString(), menuSelector_HighScore.firstRankText, Colors.White, nameFormat);
-                         counter++;
+                         tempScoreString = menuSelector_HighScore.save[0].score.ToString();
+                         tempNameString = menuSelector_HighScore.save[0].name;
+                         if (length <= 5)
+                         {
+                              for (int counter = 1; counter < length; counter++)
+                              {
+                                   tempScoreString += "\n" + menuSelector_HighScore.save[counter].score.ToString();
+                                   tempNameString += "\n" + menuSelector_HighScore.save[counter].name;
+                              }
+                         }
+                         else
+                         {
+                              for (int counter = 1; counter < 5; counter++)
+                              {
+                                   tempScoreString += "\n" + menuSelector_HighScore.save[counter].score.ToString();
+                                   tempNameString += "\n" + menuSelector_HighScore.save[counter].name;
+                              }
+                         }
+                         args.DrawingSession.DrawText(tempScoreString, menuSelector_HighScore.rankingText, Colors.White, nameFormat);
+                         args.DrawingSession.DrawText(tempNameString, menuSelector_HighScore.namingText, Colors.White, nameFormat);
+
+
+
                     }
                     //args.DrawingSession.DrawText(menuSelector_HighScore.pla)
 
@@ -554,9 +580,11 @@ namespace App1
                          snake.resetGame(currentColor);
                          highScoreMenu = true;
                          gameOverCounter = 0;
+                         scoreSaved = false;
+                         nameSaved = false;
 
-                         
-                         
+
+
                     }
                }
 
@@ -876,7 +904,7 @@ namespace App1
                {
 
 
-                    if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.firstName == NameSelection.Z)
+                    if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.firstName == NameSelection.Z && menuSelector_HighScore.leftSelection)
                     {
                          menuSelector_HighScore.firstName = NameSelection.A;
                     }
@@ -884,7 +912,7 @@ namespace App1
                     {
                          menuSelector_HighScore.moveUp();
                     }
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.firstName == NameSelection.A)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.firstName == NameSelection.A && menuSelector_HighScore.leftSelection)
                     {
                          menuSelector_HighScore.firstName = NameSelection.Z;
 
@@ -894,7 +922,7 @@ namespace App1
                          menuSelector_HighScore.moveDown();
                     }
 
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.middleName == NameSelection.Z)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.middleName == NameSelection.Z && menuSelector_HighScore.middleSelection)
                     {
                          menuSelector_HighScore.middleName = NameSelection.A;
                     }
@@ -902,7 +930,7 @@ namespace App1
                     {
                          menuSelector_HighScore.moveUp();
                     }
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.middleName == NameSelection.A)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.middleName == NameSelection.A && menuSelector_HighScore.middleSelection)
                     {
                          menuSelector_HighScore.middleName = NameSelection.Z;
 
@@ -914,6 +942,7 @@ namespace App1
                     else if (e.VirtualKey == Windows.System.VirtualKey.Left)
                     {
                          menuSelector_HighScore.moveLeft();
+                         
                     }
                     else if (e.VirtualKey == Windows.System.VirtualKey.Right)
                     {
@@ -921,8 +950,41 @@ namespace App1
                     }
                     else if (e.VirtualKey == Windows.System.VirtualKey.Space)
                     {
-                         //string fullName = menuSelector_HighScore.firstName.ToString() + menuSelector_HighScore.middleName.ToString() + menuSelector_HighScore.lastName.ToString();
-                         
+                         if (!nameSaved)
+                         {
+                              string fullName = menuSelector_HighScore.firstName.ToString() + menuSelector_HighScore.middleName.ToString() + menuSelector_HighScore.lastName.ToString();
+                              PlayerScores temp = new PlayerScores();
+                              temp.score = Score.playerScore;
+                              temp.name = fullName;
+                              bool duplicate = false;
+                              if (menuSelector_HighScore.save.Count() <= 5)
+                              {
+                                   
+                                   for (int i = 0; i < menuSelector_HighScore.save.Count(); i++)
+                                   {
+                                        if (menuSelector_HighScore.save[i].name == temp.name)
+                                        {
+                                             if (menuSelector_HighScore.save[i].score < temp.score)
+                                             {
+                                                  menuSelector_HighScore.save[i] = temp;
+                                             }
+                                             i = 100;
+                                             duplicate = true;
+                                        }
+                                   }
+                                   if (!duplicate)
+                                   {
+                                        menuSelector_HighScore.save.Add(temp);
+                                        
+                                   }
+                                   
+                              }
+                              nameSaved = true;
+                              menuSelector_HighScore.saveScore();
+
+
+                         }
+
                     }
 
                }

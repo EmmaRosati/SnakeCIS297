@@ -2,6 +2,7 @@
 using Microsoft.Graphics.Canvas.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -167,6 +168,7 @@ namespace App1
                     lengthenSnake();
                     growSnake = false;
                     Score.playerScore++;
+                    
                }
 
 
@@ -717,11 +719,8 @@ namespace App1
           public Rect middleInitial;
           public Rect rightInitial;
           public Rect highScoreText;
-          public Rect firstRankText;
-          public Rect secondRankText;
-          public Rect thirdRankText;
-          public Rect fourthRankText;
-          public Rect fifthRankText;
+          public Rect rankingText;
+          public Rect namingText;
 
           public NameSelection firstName;
           public NameSelection middleName;
@@ -736,7 +735,7 @@ namespace App1
           public menuSelector_HighScore()
           {
                //scoresArray = new int[5, 2];
-               
+               //readData();
 
                leftSelection = true;         //currently cursor is on first initial
                middleSelection = false;
@@ -766,56 +765,54 @@ namespace App1
                highScoreText.Width = 150;
                highScoreText.Height = 50;
 
-               firstRankText = new Rect();
-               firstRankText.X = 100;
-               firstRankText.Y = 150;
-               firstRankText.Width = 50;
-               firstRankText.Height = 50;
+               rankingText = new Rect();
+               rankingText.X = 100;
+               rankingText.Y = 150;
+               rankingText.Width = 50;
+               rankingText.Height = 250;
+
+               namingText = new Rect();
+               namingText.X = 300;
+               namingText.Y = 150;
+               namingText.Width = 150;
+               namingText.Height = 250;
+
 
                firstName = NameSelection.C;
                middleName = NameSelection.I;
                lastName = NameSelection.S;
                
           }
-          
+
+          //Source: https://www.jquery-az.com/c-sharp-list-sort/
           public void saveScore()
           {
                fullName = firstName.ToString() + middleName.ToString() + lastName.ToString();
-               save.Sort();       //To be edited
+               //save.Sort();       //To be edited
+               save = save.OrderBy(p => p.score).ToList();
+               save.Reverse();
 
           }
 
-          //Source: https://stackoverflow.com/questions/4906725/largest-and-smallest-number-in-an-array
-          public void reGroup(List<int> scores, List<string> players)
-          {
-               
-
-
-               //int minint1 = tempArray[0, 0];
-               //int minint2 = tempArray[0, 1];
-               //int maxint1 = tempArray[0, 0];
-               //int maxint2 = tempArray[0, 1];
-               //for (int i = 0; i < 5; i++)
-               //{
-               //     if (tempArray[i,0] < minint1)
-               //     {
-               //          minint1 = tempArray[i, 0];
-               //          minint2 = tempArray[i, 1];
-               //     }
-               //     if (tempArray[i,0] > maxint1)
-               //     {
-               //          maxint1 = tempArray[i, 0];
-               //          maxint2 = tempArray[i, 1];
-               //     }
-               //}
-
-
-               //foreach (int value in tempArray)
-               //{
-               //     if (value < minint) minint = value;
-               //     if (value > maxint) maxint = value;
-               //}
-          }
+          //public void readData()
+          //{
+          //     var inputFile = new FileStream(@"c:\Users\Nisarg\Documents\GitHub\SnakeCIS297\Snake\input.txt", FileMode.Open, FileAccess.Read);
+          //     save.RemoveRange(0, save.Count());
+          //     using (var streamReader = new StreamReader(inputFile, Encoding.UTF8))
+          //     {
+          //          string line;
+          //          while ((line = streamReader.ReadLine()) != null)
+          //          {
+          //               PlayerScores temp = new PlayerScores();
+          //               temp.score = Convert.ToInt32(line.Substring(0, 1));
+          //               temp.name = line.Substring(2, 3);
+          //               save.Add(temp);
+          //          }
+          //     }
+          //     save = save.OrderBy(p => p.score).ToList();
+          //     save.Reverse();
+          //}
+          
 
           public void draw(CanvasDrawingSession canvas)
           {

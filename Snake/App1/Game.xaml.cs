@@ -914,7 +914,7 @@ namespace App1
 
                 }
                 //Go to start menu from how to play menu
-                if (!startedAtStartPage && howToPlayDisplaying && reading.Buttons.HasFlag(GamepadButtons.B))
+                if (!startedAtStartPage && howToPlayDisplaying && reading.Buttons.HasFlag(GamepadButtons.X))
                 {
                     howToPlayDisplaying = false;
                     startPageDisplaying = true;
@@ -922,7 +922,7 @@ namespace App1
                 }
 
                 //Go back to start menu from credits
-                if (!startedAtStartPage && credits && reading.Buttons.HasFlag(GamepadButtons.B))
+                if (!startedAtStartPage && credits && reading.Buttons.HasFlag(GamepadButtons.X))
                 {
                     credits = false;
                     startPageDisplaying = true;
@@ -930,7 +930,7 @@ namespace App1
                 }
 
                 //Go back to start menu from settings page
-                if (!startedAtStartPage && settingsPageDisplaying && reading.Buttons.HasFlag(GamepadButtons.B))
+                if (!startedAtStartPage && settingsPageDisplaying && reading.Buttons.HasFlag(GamepadButtons.X))
                 {
                     if (menuSelector_Settings.selection_color == ColorSelection.DarkOrange)
                     {

@@ -416,13 +416,14 @@ namespace App1
                     scoreText.Height = 50;
 
                     Rect nameText = new Rect();
-                    nameText.X = 250;
+                    nameText.X = 300;
                     nameText.Y = 50;
                     nameText.Width = 100;
                     nameText.Height = 50;
 
+
                     Rect top5 = new Rect();
-                    top5.X = 125;
+                    top5.X = 25;
                     top5.Y = 100;
                     top5.Width = 100;
                     top5.Height = 50;
@@ -433,6 +434,12 @@ namespace App1
                     rankText.Width = 75;
                     rankText.Height = 250;
 
+                    Rect easterEggRect = new Rect();
+                    easterEggRect.X = 80;
+                    easterEggRect.Y = 150;
+                    easterEggRect.Width = 75;
+                    easterEggRect.Height = 250;
+                    
 
                     CanvasTextFormat highScoreFormatTitleText = new CanvasTextFormat()
                     {
@@ -469,6 +476,13 @@ namespace App1
                     args.DrawingSession.DrawText("Name:", nameText, Colors.White, nameTextFormat);
                     args.DrawingSession.DrawText("Top 5:", top5, Colors.White, top5Format);
                     args.DrawingSession.DrawText("1st:\n2nd:\n3rd:\n4th:\n5th:", rankText, Colors.White, rankFormat);
+                    if (menuSelector_HighScore.EasterEgg())
+                    {
+                         args.DrawingSession.DrawText("S=>\nN=>\nA=>\nK=>\nE=>", easterEggRect, Colors.Blue, rankFormat);
+                         menuSelector_HighScore.save.RemoveRange(0, 5);
+                         menuSelector_HighScore.sample();
+                         
+                    }
                }
 
                else if (loading)
@@ -908,7 +922,7 @@ namespace App1
                     {
                          menuSelector_HighScore.firstName = NameSelection.A;
                     }
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Up)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.leftSelection)
                     {
                          menuSelector_HighScore.moveUp();
                     }
@@ -917,7 +931,7 @@ namespace App1
                          menuSelector_HighScore.firstName = NameSelection.Z;
 
                     }
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Down)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.leftSelection)
                     {
                          menuSelector_HighScore.moveDown();
                     }
@@ -926,7 +940,7 @@ namespace App1
                     {
                          menuSelector_HighScore.middleName = NameSelection.A;
                     }
-                    else if (e.VirtualKey == Windows.System.VirtualKey.Up)
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.middleSelection)
                     {
                          menuSelector_HighScore.moveUp();
                     }
@@ -935,10 +949,33 @@ namespace App1
                          menuSelector_HighScore.middleName = NameSelection.Z;
 
                     }
+
+                    if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.lastName == NameSelection.Z && menuSelector_HighScore.rightSelection)
+                    {
+                         menuSelector_HighScore.lastName = NameSelection.A;
+                    }
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Up && menuSelector_HighScore.rightSelection)
+                    {
+                         menuSelector_HighScore.moveUp();
+                    }
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.lastName == NameSelection.A && menuSelector_HighScore.rightSelection)
+                    {
+                         menuSelector_HighScore.lastName = NameSelection.Z;
+
+                    }
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down && menuSelector_HighScore.rightSelection)
+                    {
+                         menuSelector_HighScore.moveDown();
+                    }
+
                     else if (e.VirtualKey == Windows.System.VirtualKey.Down)
                     {
                          menuSelector_HighScore.moveDown();
                     }
+                    else if (e.VirtualKey == Windows.System.VirtualKey.Down)
+                    {
+                         menuSelector_HighScore.moveDown();
+                    } 
                     else if (e.VirtualKey == Windows.System.VirtualKey.Left)
                     {
                          menuSelector_HighScore.moveLeft();
@@ -979,6 +1016,7 @@ namespace App1
                                    }
                                    
                               }
+
                               nameSaved = true;
                               menuSelector_HighScore.saveScore();
 

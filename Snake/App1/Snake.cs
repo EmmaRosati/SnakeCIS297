@@ -730,12 +730,40 @@ namespace App1
           //public int[,] scoresArray;
           public List<PlayerScores> save = new List<PlayerScores>();
 
+          public void sample()
+          {
+               PlayerScores temp1 = new PlayerScores();
+               PlayerScores temp2 = new PlayerScores();
+               PlayerScores temp3 = new PlayerScores();
+               PlayerScores temp4 = new PlayerScores();
+               PlayerScores temp5 = new PlayerScores();
 
+               temp1.name = "You";
+               temp1.score = 18;
+               temp2.name = "Found";
+               temp2.score = 14;
+               temp3.name = "The";
+               temp3.score = 1;
+               temp4.name = "Easter";
+               temp4.score = 11;
+               temp5.name = "Egg";
+               temp5.score = 5;
+
+               save.Add(temp1);
+               save.Add(temp2);
+               save.Add(temp3);
+               save.Add(temp4);
+               save.Add(temp5);
+          }
           
           public menuSelector_HighScore()
           {
                //scoresArray = new int[5, 2];
                //readData();
+               sample();
+
+
+
 
                leftSelection = true;         //currently cursor is on first initial
                middleSelection = false;
@@ -766,13 +794,13 @@ namespace App1
                highScoreText.Height = 50;
 
                rankingText = new Rect();
-               rankingText.X = 100;
+               rankingText.X = 125;
                rankingText.Y = 150;
                rankingText.Width = 50;
                rankingText.Height = 250;
 
                namingText = new Rect();
-               namingText.X = 300;
+               namingText.X = 175;
                namingText.Y = 150;
                namingText.Width = 150;
                namingText.Height = 250;
@@ -782,6 +810,27 @@ namespace App1
                middleName = NameSelection.I;
                lastName = NameSelection.S;
                
+          }
+
+          public bool EasterEgg()
+          {
+
+               if (save.Count() == 5)
+               {
+                    List<int> tempList = new List<int>();
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                         tempList.Add(save[i].score);
+                    }
+
+
+                    if (tempList.Contains(18) && tempList.Contains(14) && tempList.Contains(1) && tempList.Contains(11) && tempList.Contains(5))
+                    {
+                         return true;
+                    }
+               }
+               return false;
           }
 
           //Source: https://www.jquery-az.com/c-sharp-list-sort/

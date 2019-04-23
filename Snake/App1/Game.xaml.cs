@@ -21,6 +21,7 @@ using Windows.Media.Playback;
 using Windows.Media.Core;
 using Windows.Gaming.Input;
 using Microsoft.Graphics.Canvas;
+using System.Threading;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 // This comment is pointless
@@ -40,6 +41,7 @@ namespace App1
         private MediaPlayer OneMoreLineSongPlayer;
         private MediaPlayer gameoverSoundEffect;
         private MediaPlayer thankYouSoundEffect;
+        private MediaPlayer iGotItSoundEffect;
 
         
 
@@ -52,6 +54,7 @@ namespace App1
         private int turnCounter;
         private int loadCounter;
         private int thankYouSoundEffectCounter;
+        private int delayForDPad;
 
         private bool cantChangeDirection;
         private bool turningLeft;
@@ -67,7 +70,11 @@ namespace App1
         private bool changeToOneMoreLine;
         private bool settingsPageDisplaying;
         private bool IsColorColumn; // For Color Column
-        
+        private bool dpadDownIsPressed;
+        private bool dpadUpIsPressed;
+        private bool scoreScreen;
+        private bool resetTheGame;
+
 
         private bool howToPlayDisplaying;
         private bool loading;
@@ -99,12 +106,17 @@ namespace App1
             changeToDuckTales = false;
             changeToOneMoreLine = false;
             changeToGTO = false;
+            dpadDownIsPressed = false;
+            dpadUpIsPressed = false;
+            scoreScreen = false;
+            resetTheGame = false;
 
 
             /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
             gameOverCounter = 0;
             turnCounter = 0;
             thankYouSoundEffectCounter = 0;
+            delayForDPad = 0;
 
             //Set width and height of window
             ApplicationView.PreferredLaunchViewSize = new Size(600, 400);
@@ -135,6 +147,10 @@ namespace App1
             //Thank you sound effect
             thankYouSoundEffect = new MediaPlayer();
             thankYouSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_thank_you.wav"));
+
+            //I Got It Sound Effect
+            iGotItSoundEffect = new MediaPlayer();
+            iGotItSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/i_got_it.wav"));
 
             menuSelector = new menuSelector();
             menuSelector_Settings = new menuSelector_Settings();
@@ -257,7 +273,7 @@ namespace App1
             {
                 Rect SettingsTitleRec = new Rect();
                 SettingsTitleRec.X = 25;
-                SettingsTitleRec.Y = 20;
+                SettingsTitleRec.Y = 10;
                 SettingsTitleRec.Width = 200;
                 SettingsTitleRec.Height = 50;
 
@@ -279,10 +295,14 @@ namespace App1
                 ExitSign.Width = 550;
                 ExitSign.Height = 200;
 
+                Rect instructions = new Rect();
+                instructions.X = 25;
+                instructions.Y = 55;
+                instructions.Width = 550;
+                instructions.Height = 60;
 
-
-                string select_Colors = "Dark Orange \n\nGreen \n\nCyan \n\nHot Pink \n\n";
-                string select_Music = "Duck Tales \n\nOne More Line \n\nGTO Theme \n\n";
+                string select_Colors = "DARK ORANGE \n\nGREEN \n\nCYAN \n\nHOT PINK\n\n";
+                string select_Music = "SONG 1\n\nSONG 2\n\nSONG 3\n\n";
 
                 CanvasTextFormat SettingsFormatOfTitleText = new CanvasTextFormat()
                 {
@@ -290,11 +310,44 @@ namespace App1
                     FontSize = 25
                 };
 
-                args.DrawingSession.DrawText("Settings!!!", SettingsTitleRec, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText("SETTINGS!!!", SettingsTitleRec, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText(select_Colors, selectionTextColor, Colors.White, SettingsFormatOfTitleText);
                 args.DrawingSession.DrawText(select_Music, selectionTextMusic, Colors.White, SettingsFormatOfTitleText);
-                args.DrawingSession.DrawText("PRESS ENTER OR A TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
+                args.DrawingSession.DrawText("PRESS ENTER OR X TO GO TO START MENU", ExitSign, Colors.White, SettingsFormatOfTitleText);
                 menuSelector_Settings.draw(args.DrawingSession);
+                args.DrawingSession.DrawText("HIT LEFT AND RIGHT TO SWITCH COLUMNS", instructions, Colors.White, SettingsFormatOfTitleText);
+            }
+
+            else if (scoreScreen)
+            {
+                Rect scoreScreenRec = new Rect();
+                scoreScreenRec.X = 20;
+                scoreScreenRec.Y = 20;
+                scoreScreenRec.Width = 570;
+                scoreScreenRec.Height = 570;
+
+                CanvasTextFormat scoreScreenFormat = new CanvasTextFormat()
+                {
+                    FontFamily = "Courier New",
+                    FontSize = 30
+                };
+
+                string scoreScreenText = "GAMING HEROS\n\nMARIO ....... 59\nYOSHI ....... 49\nLINK ........ 39\n\n" +
+                                         "YOU ......... " + snake.playerScore + "\n\n";
+
+                if (snake.playerScore > 59)
+                {
+                    scoreScreenText += "YOU'RE A TRUE GAMING HERO!!!\n\n";
+                }
+
+                else
+                {
+                    scoreScreenText += "YOU SUCK! GET BETTER, SCRUB!\n\n";
+                }
+
+                scoreScreenText += "PRESS ENTER OR X TO GO TO START\n";
+
+                args.DrawingSession.DrawText(scoreScreenText, scoreScreenRec, Colors.White, scoreScreenFormat);
             }
 
             else if(howToPlayDisplaying)
@@ -316,8 +369,10 @@ namespace App1
                                              "D-PAD DOWN/DOWN ARROW = GO DOWN\n" +
                                              "D-PAD LEFT/LEFT ARROW = GO LEFT\n" +
                                              "D-PAD RIGHT/RIGHT ARROW = GO RIGHT\n" +
-                                             "ENTER/A BUTTON = SELECT/BACK/ADVANCE\n\n" +
-                                             "PRESS ENTER OR A TO GO TO START MENU", howToPlayRect, Colors.White, rectFormat);
+                                             "ENTER = SELECT/BACK/ADVANCE\n" +
+                                             "A BUTTON = SELECT\n" +
+                                             "X BUTTON = BACK\n\n" +
+                                             "PRESS ENTER OR X TO GO TO START MENU", howToPlayRect, Colors.White, rectFormat);
             }
 
             else if(loading)
@@ -353,7 +408,7 @@ namespace App1
                 };
 
                 string creditsString = "THE CREW:\n\nALEX ROSATI (SUPER COOL)\nAVIAN CALADO (SLEEPY)\nPETER SCHUBERT (COOL)\nNISARG"
-                                        + " PATEL (COOL) \n\nPRESS ENTER OR A TO GO BACK";
+                                        + " PATEL (COOL) \n\nPRESS ENTER OR X TO GO BACK";
 
                 args.DrawingSession.DrawText(creditsString, creditsRec, Colors.White, textFormatOfCredits);
             }
@@ -394,7 +449,13 @@ namespace App1
            {
                controllerGameLogic();
 
-               if (!canTurn)
+                if (resetTheGame)
+                {
+                    snake.resetGame(currentColor);
+                    resetTheGame = false;
+                }
+
+                if (!canTurn)
                {
                     ++turnCounter;
 
@@ -420,9 +481,14 @@ namespace App1
                 if (gameOverCounter == 360)
                 {
                     gameOver = false;
-                    snake.resetGame(currentColor);
-                    startPageDisplaying = true;
+                    scoreScreen = true;
+                    resetTheGame = true;
                     gameOverCounter = 0;
+
+                    if (snake.playerScore > 59)
+                    {
+                        iGotItSoundEffect.Play();
+                    }
                 }
            }
 
@@ -456,6 +522,18 @@ namespace App1
            {
                 gameControllerLogic_StartMenu_SettingsMenu();
            }
+
+           else if (scoreScreen && Gamepad.Gamepads.Count > 0)
+           {
+                Gamepad firstController = Gamepad.Gamepads.First();
+                GamepadReading reading = firstController.GetCurrentReading();
+
+                if (reading.Buttons.HasFlag(GamepadButtons.X) && scoreScreen)
+                {
+                    scoreScreen = false;
+                    startPageDisplaying = true;
+                }
+            }
         }
 
         private void updateGame()
@@ -798,6 +876,12 @@ namespace App1
                 startPageDisplaying = true;
                 menuSelector = new menuSelector();
             }
+
+            if (e.VirtualKey == Windows.System.VirtualKey.Enter && scoreScreen)
+            {
+                scoreScreen = false;
+                startPageDisplaying = true;
+            }
         }
 
         //Makes Snake Turn when d-pad on controller is pressed
@@ -848,14 +932,29 @@ namespace App1
                 if (startPageDisplaying)
                 {
 
-                    if (reading.Buttons.HasFlag(GamepadButtons.DPadDown))
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !dpadDownIsPressed)
                     {
                         menuSelector.moveDown();
+                        dpadDownIsPressed = true;
                     }
-                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadUp))
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadDown) && dpadDownIsPressed)
+                    {
+                        dpadDownIsPressed = false;
+                    }
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !dpadUpIsPressed)
                     {
                         menuSelector.moveUp();
+                        dpadUpIsPressed = true;
                     }
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadUp) && dpadUpIsPressed)
+                    {
+                        dpadUpIsPressed = false;
+                    }
+
+
                     if (reading.Buttons.HasFlag(GamepadButtons.A))
                     {
                         if (menuSelector.selection == startPageSelection.Play)
@@ -887,29 +986,58 @@ namespace App1
                 
                 if (settingsPageDisplaying)
                 {
-                    if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && IsColorColumn)
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && IsColorColumn && !dpadUpIsPressed)
                     {
                         menuSelector_Settings.moveUp_Color();
+                        dpadUpIsPressed = true;
                     }
-                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && IsColorColumn)
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadUp) && IsColorColumn && dpadUpIsPressed)
+                    {
+                        dpadUpIsPressed = false;
+                    }
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && IsColorColumn && !dpadDownIsPressed)
                     {
                         menuSelector_Settings.moveDown_Color();
+                        dpadDownIsPressed = true;
                     }
-                   else  if (reading.Buttons.HasFlag(GamepadButtons.DPadRight) && IsColorColumn)
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadDown) && IsColorColumn && dpadDownIsPressed)
+                    {
+                        dpadDownIsPressed = false;
+                    }
+
+                   if (reading.Buttons.HasFlag(GamepadButtons.DPadRight) && IsColorColumn)
                    {
                         IsColorColumn = false;
                    }
-                   else if (reading.Buttons.HasFlag(GamepadButtons.DPadLeft) && !IsColorColumn)
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadLeft) && !IsColorColumn)
                     {
                          IsColorColumn = true;
                     }
-                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !IsColorColumn)
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !IsColorColumn && !dpadUpIsPressed)
                     {
                         menuSelector_Settings.moveUp_Music();
+                        dpadUpIsPressed = true;
                     }
-                    else if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !IsColorColumn)
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadUp) && !IsColorColumn && dpadUpIsPressed)
+                    {
+                        dpadUpIsPressed = false;
+                    }
+
+                    if (reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !IsColorColumn && !dpadDownIsPressed)
                     {
                         menuSelector_Settings.moveDown_Music();
+                        dpadDownIsPressed = true;
+                    }
+
+                    else if (!reading.Buttons.HasFlag(GamepadButtons.DPadDown) && !IsColorColumn && dpadDownIsPressed)
+                    {
+                        dpadDownIsPressed = false;
                     }
 
                 }

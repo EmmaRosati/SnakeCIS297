@@ -111,6 +111,7 @@
     <Content Include="Assets\chomp_sound_effect.wav" />
     <Content Include="Assets\duck_tales_music.wav" />
     <Content Include="Assets\gto_theme.wav" />
+    <Content Include="Assets\i_got_it.wav" />
     <Content Include="Assets\one_more_line_song.wav" />
     <Content Include="Assets\sm64_mario_game_over.wav" />
     <Content Include="Assets\sm64_mario_thank_you.wav" />

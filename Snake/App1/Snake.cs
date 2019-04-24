@@ -92,10 +92,12 @@ namespace App1
             }
 
             //Set up bite sound effect
+            //Source: https://www.youtube.com/watch?v=aiNg8ChsyUg
             biteSoundEffect = new MediaPlayer();
             biteSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/chomp_sound_effect.wav"));
 
             //Set up yipee sound effect that never plays
+            //Source: https://themushroomkingdom.net/media/sm64/wav
             yahooSoundEffect = new MediaPlayer();
             yahooSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_yahoo.wav"));
 

@@ -123,6 +123,7 @@ namespace App1
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             //Start background music
+            //Source: https://www.youtube.com/watch?v=2UuHesrJROw
             duckTalesSongPlayer = new MediaPlayer();
             duckTalesSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/duck_tales_music.wav"));
             duckTalesSongPlayer.Volume = 0.06;
@@ -130,25 +131,30 @@ namespace App1
             duckTalesSongPlayer.Play();
             backgroundMusic = duckTalesSongPlayer;
 
+            //Source: https://www.youtube.com/watch?v=Uc6vF1PWdFY
             GTOSongPlayer = new MediaPlayer();
             GTOSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/gto_theme.wav"));
             GTOSongPlayer.Volume = 0.06;
             GTOSongPlayer.MediaEnded += resetGTOSong;
 
+            //Source: https://www.youtube.com/watch?v=lYldC9K3hrg
             OneMoreLineSongPlayer = new MediaPlayer();
             OneMoreLineSongPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/one_more_line_song.wav"));
             OneMoreLineSongPlayer.Volume = 0.06;
             OneMoreLineSongPlayer.MediaEnded += resetOneMoreLineSong;
 
             //Gameover sound effect
+            //Source: https://themushroomkingdom.net/media/sm64/wav
             gameoverSoundEffect = new MediaPlayer();
             gameoverSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_game_over.wav"));
 
             //Thank you sound effect
+            //Source: https://themushroomkingdom.net/media/sm64/wav
             thankYouSoundEffect = new MediaPlayer();
             thankYouSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/sm64_mario_thank_you.wav"));
 
             //I Got It Sound Effect
+            //Source: http://www.realmofdarkness.net/sb/category/mp/mp3/
             iGotItSoundEffect = new MediaPlayer();
             iGotItSoundEffect.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/i_got_it.wav"));
 
